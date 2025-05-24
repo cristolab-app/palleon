@@ -15,40 +15,62 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         <div class="palleon-modal-inner large">
             <div class="palleon-tabs">
                 <ul class="palleon-tabs-menu">
-                    <li class="active" data-target="#modal-select-img"><span class="material-icons">file_upload</span><?php echo esc_html__('New Image', 'palleon'); ?></li>
+                    <li class="active" data-target="#modal-blank-canvas"><span class="material-icons">texture</span><?php echo esc_html__('Blank Canvas', 'palleon'); ?></li>
                     <?php if ($templates == 'enable') { ?>
                     <li data-target="#modal-template-library"><span class="material-icons">photo_library</span><?php echo esc_html__('Template Library', 'palleon'); ?></li>
                     <?php } ?>
-                    <li data-target="#modal-blank-canvas"><span class="material-icons">texture</span><?php echo esc_html__('Blank Canvas', 'palleon'); ?></li>
-                    <?php do_action('palleon_add_new_menu'); ?>
                 </ul>
-                <div id="modal-select-img" class="palleon-tab active">
-                    <div class="palleon-select-btn-block">
+                <div id="modal-blank-canvas" class="palleon-tab active">
+                    <div class="palleon-control-group">
                         <div>
-                            <div class="palleon-btn-set">
-                                <div id="palleon-image-upload-wrap" class="palleon-file-field">
-                                    <input type="file" name="palleon-image-upload" id="palleon-image-upload" class="palleon-hidden-file" accept="image/png, image/jpeg, image/webp" />
-                                    <label for="palleon-image-upload" class="palleon-btn primary palleon-lg-btn"><span class="material-icons">upload</span><span><?php echo esc_html__('Upload Image', 'palleon'); ?></span></label>
-                                </div>
-                                <?php if (is_user_logged_in() && ($ml_button == 'show' || current_user_can('administrator') || current_user_can('editor'))) { ?>
-                                <button id="palleon-media-library" type="button" class="palleon-btn primary palleon-lg-btn palleon-modal-open" data-target="#modal-media-library"><span class="material-icons">photo_library</span><?php echo esc_html__('Select From Media Library', 'palleon'); ?></button>
-                                <?php } ?>
-                            </div>
+                            <label><?php echo esc_html__('Size', 'palleon'); ?></label>
+                            <select id="palleon-canvas-size-select" class="palleon-select" autocomplete="off">
+                                <option selected value="custom" data-width="800" data-height="800"><?php echo esc_html__('Custom', 'palleon'); ?></option>
+                                <?php if (empty($canvas_sizes)) { ?>
+                                <option value="" data-width="2240" data-height="1260"><?php echo esc_html__('Blog Banner', 'palleon'); ?></option>
+                                <option value="" data-width="851" data-height="315"><?php echo esc_html__('Facebook Cover', 'palleon'); ?></option>
+                                <option value="" data-width="1200" data-height="628"><?php echo esc_html__('Facebook Ad', 'palleon'); ?></option>
+                                <option value="" data-width="1080" data-height="1080"><?php echo esc_html__('Instagram Post', 'palleon'); ?></option>
+                                <option value="" data-width="750" data-height="1120"><?php echo esc_html__('Pinterest Post', 'palleon'); ?></option>
+                                <option value="" data-width="940" data-height="788"><?php echo esc_html__('Facebook Post', 'palleon'); ?></option>
+                                <option value="" data-width="1600" data-height="900"><?php echo esc_html__('Twitter Post', 'palleon'); ?></option>
+                                <option value="" data-width="1280" data-height="720"><?php echo esc_html__('Youtube Thumbnail', 'palleon'); ?></option>
+                                <option value="" data-width="1920" data-height="1080"><?php echo esc_html__('Wallpaper', 'palleon'); ?></option>
+                                <?php } else if (!empty($canvas_sizes) && is_array($canvas_sizes)) {
+                                    foreach ( $canvas_sizes as $key => $entry ) {
+                                        $name = $width = $height = '';
+                                        if ( isset( $entry['name'] ) ) {
+                                            $name = esc_html( $entry['name'] );
+                                        }
+                                        if ( isset( $entry['width'] ) ) {
+                                            $width = esc_attr( $entry['width'] );
+                                        }
+                                        if ( isset( $entry['height'] ) ) {
+                                            $height = esc_attr( $entry['height'] );
+                                        }
+                                        echo '<option value="" data-width="' . $width . '" data-height="' . $height . '">' . $name . '</option>';
+                                    }
+                                }
+                                ?>
+                            </select>
                         </div>
                         <div>
-                            <?php if ($templates == 'enable') { ?>
-                            <div class="palleon-file-field">
-                                <input type="file" name="palleon-json-upload" id="palleon-json-upload" class="palleon-hidden-file" accept=".json,application/JSON" />
-                                <label for="palleon-json-upload" class="palleon-btn primary palleon-lg-btn"><span class="material-icons">upload</span><span><?php echo esc_html__('Upload Template', 'palleon'); ?></span></label>
-                            </div>
-                            <?php } ?>
+                            <label><?php echo esc_html__('Width', 'palleon'); ?></label>
+                            <input id="palleon-canvas-width" class="palleon-form-field" type="number" value="800" data-min="1" data-max="10000" autocomplete="off">
+                        </div>
+                        <div>
+                            <label><?php echo esc_html__('Height', 'palleon'); ?></label>
+                            <input id="palleon-canvas-height" class="palleon-form-field" type="number" value="800" data-min="1" data-max="10000" autocomplete="off">
+                        </div>
+                        <div>
+                            <label><?php echo esc_html__('Background', 'palleon'); ?></label>
+                            <input id="palleon-canvas-color" type="text" class="palleon-colorpicker allow-empty" autocomplete="off" value="" />
+                        </div>
+                        <div>
+                            <button id="palleon-canvas-create" type="button" class="palleon-btn primary"><span class="material-icons">done</span><?php echo esc_html__('Create', 'palleon'); ?></button>
                         </div>
                     </div>
-                    <div id="palleon-drag-drop-upload">
-                        <span class="material-icons">cloud_upload</span>
-                        <p><?php echo esc_html__('Drag & Drop Image Here', 'palleon'); ?></p>
-                    </div>
-                    <?php Palleon::ad_manager('add-new-img'); ?>
+                    <?php Palleon::ad_manager('blank-canvas'); ?>
                 </div>
                 <?php if ($templates == 'enable') { ?>
                 <div id="modal-template-library" class="palleon-tab">
@@ -172,58 +194,6 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                     </div>
                 </div>
                 <?php } ?>
-                <div id="modal-blank-canvas" class="palleon-tab">
-                    <div class="palleon-control-group">
-                        <div>
-                            <label><?php echo esc_html__('Size', 'palleon'); ?></label>
-                            <select id="palleon-canvas-size-select" class="palleon-select" autocomplete="off">
-                                <option selected value="custom" data-width="800" data-height="800"><?php echo esc_html__('Custom', 'palleon'); ?></option>
-                                <?php if (empty($canvas_sizes)) { ?>
-                                <option value="" data-width="2240" data-height="1260"><?php echo esc_html__('Blog Banner', 'palleon'); ?></option>
-                                <option value="" data-width="851" data-height="315"><?php echo esc_html__('Facebook Cover', 'palleon'); ?></option>
-                                <option value="" data-width="1200" data-height="628"><?php echo esc_html__('Facebook Ad', 'palleon'); ?></option>
-                                <option value="" data-width="1080" data-height="1080"><?php echo esc_html__('Instagram Post', 'palleon'); ?></option>
-                                <option value="" data-width="750" data-height="1120"><?php echo esc_html__('Pinterest Post', 'palleon'); ?></option>
-                                <option value="" data-width="940" data-height="788"><?php echo esc_html__('Facebook Post', 'palleon'); ?></option>
-                                <option value="" data-width="1600" data-height="900"><?php echo esc_html__('Twitter Post', 'palleon'); ?></option>
-                                <option value="" data-width="1280" data-height="720"><?php echo esc_html__('Youtube Thumbnail', 'palleon'); ?></option>
-                                <option value="" data-width="1920" data-height="1080"><?php echo esc_html__('Wallpaper', 'palleon'); ?></option>
-                                <?php } else if (!empty($canvas_sizes) && is_array($canvas_sizes)) {
-                                    foreach ( $canvas_sizes as $key => $entry ) {
-                                        $name = $width = $height = '';
-                                        if ( isset( $entry['name'] ) ) {
-                                            $name = esc_html( $entry['name'] );
-                                        }
-                                        if ( isset( $entry['width'] ) ) {
-                                            $width = esc_attr( $entry['width'] );
-                                        }
-                                        if ( isset( $entry['height'] ) ) {
-                                            $height = esc_attr( $entry['height'] );
-                                        }
-                                        echo '<option value="" data-width="' . $width . '" data-height="' . $height . '">' . $name . '</option>';
-                                    }
-                                }
-                                ?>
-                            </select>
-                        </div>
-                        <div>
-                            <label><?php echo esc_html__('Width', 'palleon'); ?></label>
-                            <input id="palleon-canvas-width" class="palleon-form-field" type="number" value="800" data-min="1" data-max="10000" autocomplete="off">
-                        </div>
-                        <div>
-                            <label><?php echo esc_html__('Height', 'palleon'); ?></label>
-                            <input id="palleon-canvas-height" class="palleon-form-field" type="number" value="800" data-min="1" data-max="10000" autocomplete="off">
-                        </div>
-                        <div>
-                            <label><?php echo esc_html__('Background', 'palleon'); ?></label>
-                            <input id="palleon-canvas-color" type="text" class="palleon-colorpicker allow-empty" autocomplete="off" value="" />
-                        </div>
-                        <div>
-                            <button id="palleon-canvas-create" type="button" class="palleon-btn primary"><span class="material-icons">done</span><?php echo esc_html__('Create', 'palleon'); ?></button>
-                        </div>
-                    </div>
-                    <?php Palleon::ad_manager('blank-canvas'); ?>
-                </div>
                 <?php do_action('palleon_add_new_tab'); ?>
             </div>
         </div>
