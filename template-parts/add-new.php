@@ -21,8 +21,11 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                     <?php } ?>
                 </ul>
                 <div id="modal-blank-canvas" class="palleon-tab active">
+
+                    
+
                     <div class="palleon-control-group">
-                        <div>
+                        <!-- <div>
                             <label><?php echo esc_html__('Size', 'palleon'); ?></label>
                             <select id="palleon-canvas-size-select" class="palleon-select" autocomplete="off">
                                 <option selected value="custom" data-width="800" data-height="800"><?php echo esc_html__('Custom', 'palleon'); ?></option>
@@ -53,7 +56,7 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                                 }
                                 ?>
                             </select>
-                        </div>
+                        </div> -->
                         <div>
                             <label><?php echo esc_html__('Width', 'palleon'); ?></label>
                             <input id="palleon-canvas-width" class="palleon-form-field" type="number" value="800" data-min="1" data-max="10000" autocomplete="off">
@@ -68,6 +71,89 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                         </div>
                         <div>
                             <button id="palleon-canvas-create" type="button" class="palleon-btn primary"><span class="material-icons">done</span><?php echo esc_html__('Create', 'palleon'); ?></button>
+                        </div>
+                    </div>
+
+
+                    <div class="palleon-grid-wrap" style="width: 100%; margin-top: 16px;">
+                        <div id="palleon-canvas-size-grid" class="palleon-grid canvas-size-grid">
+                            <div class="grid-item" data-width="800" data-height="800">
+                                <div class="canvas-card">
+                                    <span class="canvas-title"><?php echo esc_html__('Custom', 'palleon'); ?></span>
+                                    <span class="canvas-size">800x800px</span>
+                                </div>
+                            </div>
+                            <?php if (empty($canvas_sizes)) { ?>
+                                <div class="grid-item" data-width="2240" data-height="1260">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Blog Banner', 'palleon'); ?></span>
+                                        <span class="canvas-size">2240x1260px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="851" data-height="315">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Facebook Cover', 'palleon'); ?></span>
+                                        <span class="canvas-size">851x315px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="1200" data-height="628">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Facebook Ad', 'palleon'); ?></span>
+                                        <span class="canvas-size">1200x628px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="1080" data-height="1080">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Instagram Post', 'palleon'); ?></span>
+                                        <span class="canvas-size">1080x1080px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="750" data-height="1120">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Pinterest Post', 'palleon'); ?></span>
+                                        <span class="canvas-size">750x1120px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="940" data-height="788">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Facebook Post', 'palleon'); ?></span>
+                                        <span class="canvas-size">940x788px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="1600" data-height="900">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Twitter Post', 'palleon'); ?></span>
+                                        <span class="canvas-size">1600x900px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="1280" data-height="720">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Youtube Thumbnail', 'palleon'); ?></span>
+                                        <span class="canvas-size">1280x720px</span>
+                                    </div>
+                                </div>
+                                <div class="grid-item" data-width="1920" data-height="1080">
+                                    <div class="canvas-card">
+                                        <span class="canvas-title"><?php echo esc_html__('Wallpaper', 'palleon'); ?></opti</span>
+                                        <span class="canvas-size">1920x1080px</span>
+                                    </div>
+                                </div>
+                            <?php } else if (!empty($canvas_sizes) && is_array($canvas_sizes)) {
+                                foreach ( $canvas_sizes as $key => $entry ) {
+                                    $name = $width = $height = '';
+                                    if ( isset( $entry['name'] ) ) {
+                                        $name = esc_html( $entry['name'] );
+                                    }
+                                    if ( isset( $entry['width'] ) ) {
+                                        $width = esc_attr( $entry['width'] );
+                                    }
+                                    if ( isset( $entry['height'] ) ) {
+                                        $height = esc_attr( $entry['height'] );
+                                    }
+                                    echo '<div class="grid-item" data-width="' . $width . '" data-height="' . $height . '"><div class="canvas-card"><span class="canvas-title">' . $name . '</span><span class="canvas-size">' . $width . 'x' . $height . 'px</span></div></div>';
+                                }
+                            }
+                            ?>
                         </div>
                     </div>
                     <?php Palleon::ad_manager('blank-canvas'); ?>
@@ -199,3 +285,50 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         </div>
     </div>
 </div>
+<!-- Grid visual de medidas debajo del selector -->
+<div class="palleon-grid-wrap" style="margin-top:16px;">
+    <div id="palleon-canvas-size-grid" class="palleon-grid canvas-size-grid">
+        <?php
+        // Recorrer las opciones del selector y mostrarlas como cards
+        // Esto asegura que todas las opciones del selector estén reflejadas en las cards
+        if (empty($canvas_sizes)) {
+            $preset = [
+                ['name' => esc_html__('Custom', 'palleon'), 'width' => 800, 'height' => 800],
+                ['name' => esc_html__('Blog Banner', 'palleon'), 'width' => 2240, 'height' => 1260],
+                ['name' => esc_html__('Facebook Cover', 'palleon'), 'width' => 851, 'height' => 315],
+                ['name' => esc_html__('Facebook Ad', 'palleon'), 'width' => 1200, 'height' => 628],
+                ['name' => esc_html__('Instagram Post', 'palleon'), 'width' => 1080, 'height' => 1080],
+                ['name' => esc_html__('Pinterest Post', 'palleon'), 'width' => 750, 'height' => 1120],
+                ['name' => esc_html__('Facebook Post', 'palleon'), 'width' => 940, 'height' => 788],
+                ['name' => esc_html__('Twitter Post', 'palleon'), 'width' => 1600, 'height' => 900],
+                ['name' => esc_html__('Youtube Thumbnail', 'palleon'), 'width' => 1280, 'height' => 720],
+                ['name' => esc_html__('Wallpaper', 'palleon'), 'width' => 1920, 'height' => 1080],
+            ];
+            foreach ($preset as $opt) {
+                echo '<div class="grid-item" data-width="' . esc_attr($opt['width']) . '" data-height="' . esc_attr($opt['height']) . '"><div class="canvas-card"><span class="canvas-title">' . $opt['name'] . '</span><span class="canvas-size">' . esc_html($opt['width']) . 'x' . esc_html($opt['height']) . 'px</span></div></div>';
+            }
+        } else if (!empty($canvas_sizes) && is_array($canvas_sizes)) {
+            // Custom dinámico
+            echo '<div class="grid-item" data-width="800" data-height="800"><div class="canvas-card"><span class="canvas-title">' . esc_html__('Custom', 'palleon') . '</span><span class="canvas-size">800x800px</span></div></div>';
+            foreach ($canvas_sizes as $entry) {
+                $name = isset($entry['name']) ? esc_html($entry['name']) : '';
+                $width = isset($entry['width']) ? esc_attr($entry['width']) : '';
+                $height = isset($entry['height']) ? esc_attr($entry['height']) : '';
+                echo '<div class="grid-item" data-width="' . $width . '" data-height="' . $height . '"><div class="canvas-card"><span class="canvas-title">' . $name . '</span><span class="canvas-size">' . $width . 'x' . $height . 'px</span></div></div>';
+            }
+        }
+        ?>
+    </div>
+</div>
+<script>
+    document.querySelectorAll('#palleon-canvas-size-grid .grid-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const width = this.getAttribute('data-width');
+            const height = this.getAttribute('data-height');
+            document.getElementById('palleon-canvas-width').value = width;
+            document.getElementById('palleon-canvas-height').value = height;
+            document.querySelectorAll('#palleon-canvas-size-grid .grid-item').forEach(i => i.classList.remove('selected'));
+            this.classList.add('selected');
+        });
+    });
+</script>
