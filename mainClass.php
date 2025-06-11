@@ -237,6 +237,7 @@ class Palleon {
 
         $panel_parts = apply_filters('palleonPanelParts',array(
             "adjust" => "panel-parts/adjust.php",
+            "templates" => "panel-parts/templates.php",
             "text" => "panel-parts/text.php",
             "image" => "panel-parts/image.php",
             "frames" => "panel-parts/frames.php",
@@ -244,6 +245,7 @@ class Palleon {
             "elements" => "panel-parts/elements.php",
             "icons" => "panel-parts/icons.php",
             "apps" => "panel-parts/apps.php",
+            
             "brushes" => "panel-parts/brushes.php",
             "settings" => "panel-parts/settings.php"
         ));
@@ -288,6 +290,7 @@ class Palleon {
 
         $icons = apply_filters('palleonMenuIcons',array(
             'adjust' => array('tune', esc_html__('Adjust', 'palleon')),
+            'templates' => array('view_module', esc_html__('Templates', 'palleon')),
             'text' => array('title', esc_html__('Text', 'palleon')),
             'image' => array('add_photo_alternate', esc_html__('Image', 'palleon')),
             'frames' => array('wallpaper', esc_html__('Frames', 'palleon')),
@@ -295,6 +298,7 @@ class Palleon {
             'elements' => array('star', esc_html__('Elements', 'palleon')),
             'icons' => array('emoji_emotions', esc_html__('Icons', 'palleon')),
             'apps' => array('apps', esc_html__('Apps', 'palleon')),
+            
             'draw' => array('brush', esc_html__('Brushes', 'palleon')),
             'settings' => array('settings', esc_html__('Settings', 'palleon'))
         ));
@@ -1355,6 +1359,9 @@ class Palleon {
             array_unshift($selected_templates, $_POST['templateid']); 
         }
         update_user_meta(get_current_user_id(),'palleon_template_fav', $selected_templates, false); 
+        
+        
+        
         if ($selected_templates == array()) {
             echo '<div class="notice notice-info"><h6>' . esc_html__( 'No favorites yet', 'palleon' ) . '</h6>' . esc_html__('Click the star icon on any template, and you will see it here next time you visit.', 'palleon') . '</div>';
         } else {

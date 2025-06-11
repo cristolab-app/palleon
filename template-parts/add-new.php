@@ -16,15 +16,13 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
             <div class="palleon-tabs">
                 <ul class="palleon-tabs-menu">
                     <li class="active" data-target="#modal-blank-canvas"><span class="material-icons">texture</span><?php echo esc_html__('Blank Canvas', 'palleon'); ?></li>
-                    <?php if ($templates == 'enable') { ?>
-                    <li data-target="#modal-template-library"><span class="material-icons">photo_library</span><?php echo esc_html__('Template Library', 'palleon'); ?></li>
-                    <?php } ?>
+                   
                 </ul>
                 <div id="modal-blank-canvas" class="palleon-tab active">
 
                     
 
-                    <div class="palleon-control-group">
+                    <div class="palleon-control-group" style="display: none;">
                         <!-- <div>
                             <label><?php echo esc_html__('Size', 'palleon'); ?></label>
                             <select id="palleon-canvas-size-select" class="palleon-select" autocomplete="off">
@@ -75,14 +73,14 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                     </div>
 
 
-                    <div class="palleon-grid-wrap" style="width: 100%; margin-top: 16px;">
+                    <div class="palleon-grid-wrap">
                         <div id="palleon-canvas-size-grid" class="palleon-grid canvas-size-grid">
-                            <div class="grid-item" data-width="800" data-height="800">
+                            <!--<div class="grid-item" data-width="800" data-height="800">
                                 <div class="canvas-card">
-                                    <span class="canvas-title"><?php echo esc_html__('Custom', 'palleon'); ?></span>
+                                    <span class="canvas-title"><?php //echo esc_html__('Custom', 'palleon'); ?></span>
                                     <span class="canvas-size">800x800px</span>
                                 </div>
-                            </div>
+                            </div>-->
                             <?php if (empty($canvas_sizes)) { ?>
                                 <div class="grid-item" data-width="2240" data-height="1260">
                                     <div class="canvas-card">
@@ -159,7 +157,7 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                     <?php Palleon::ad_manager('blank-canvas'); ?>
                 </div>
                 <?php if ($templates == 'enable') { ?>
-                <div id="modal-template-library" class="palleon-tab">
+                <div id="modal-template-library" class="palleon-tab" sytle="display:none;">
                     <div class="palleon-templates-wrap">
                         <div class="palleon-tabs">
                             <ul class="palleon-tabs-menu">
@@ -321,14 +319,76 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
     </div>
 </div>
 <script>
-    document.querySelectorAll('#palleon-canvas-size-grid .grid-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const width = this.getAttribute('data-width');
-            const height = this.getAttribute('data-height');
-            document.getElementById('palleon-canvas-width').value = width;
-            document.getElementById('palleon-canvas-height').value = height;
-            document.querySelectorAll('#palleon-canvas-size-grid .grid-item').forEach(i => i.classList.remove('selected'));
-            this.classList.add('selected');
-        });
+;(function(){
+    'use strict';
+
+    function adjustCardHeight(element) {
+        if (!element.isConnected || !element.parentElement) return;
+        const currentWidth = element.offsetWidth;
+        const aspectRatio = parseFloat(element.dataset.aspectRatio);
+        if (currentWidth > 0 && aspectRatio > 0 && !isNaN(aspectRatio)) {
+            element.style.height = `${currentWidth / aspectRatio}px`;
+        } else if (currentWidth > 0) {
+            element.style.height = `${currentWidth}px`;
+        }
+    }
+
+    const cardResizeObserver = new ResizeObserver(entries => {
+        for (const entry of entries) {
+            requestAnimationFrame(() => adjustCardHeight(entry.target));
+        }
     });
+
+    function initializeCard(cardElement) {
+        const w = parseInt(cardElement.dataset.width, 10);
+        const h = parseInt(cardElement.dataset.height, 10);
+        if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
+            console.error('Dimensiones inválidas en grid-item:', cardElement);
+            return;
+        }
+        cardElement.dataset.aspectRatio = w / h;
+        cardResizeObserver.observe(cardElement);
+        requestAnimationFrame(() => adjustCardHeight(cardElement));
+    }
+
+    function attemptGridInitialization() {
+        const gridItems = document.querySelectorAll('#palleon-canvas-size-grid .grid-item');
+        if (gridItems.length === 0) {
+            requestAnimationFrame(attemptGridInitialization);
+            return;
+        }
+        gridItems.forEach(item => initializeCard(item));
+    }
+
+    function initOnReady() {
+        attemptGridInitialization();
+
+        document.querySelectorAll('#palleon-canvas-size-grid .grid-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const width = this.getAttribute('data-width');
+                const height = this.getAttribute('data-height');
+                document.getElementById('palleon-canvas-width').value = width;
+                document.getElementById('palleon-canvas-height').value = height;
+                document.querySelectorAll('#palleon-canvas-size-grid .grid-item')
+                    .forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+
+                console.log(
+                    document.getElementById('palleon-canvas-create').click()
+                )
+            });
+        });
+
+        window.addEventListener('load', () => {
+            document.querySelectorAll('#palleon-canvas-size-grid .grid-item')
+                .forEach(item => requestAnimationFrame(() => adjustCardHeight(item)));
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initOnReady);
+    } else {
+        initOnReady();
+    }
+})();
 </script>
