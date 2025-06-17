@@ -374,7 +374,7 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                 this.classList.add('selected');
 
                 loadAllTemplatesAjax(width, height);
-
+                document.getElementById('palleon-canvas-selected').value = width + 'x' + height;
                 console.log(
                     document.getElementById('palleon-canvas-create').click()
                 )

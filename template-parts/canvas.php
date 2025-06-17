@@ -74,3 +74,5 @@ $ruler = PalleonSettings::get_option('module_ruler', 'enable');
         </div>
     </div>
 </div>
+
+<input type="hidden" id="palleon-canvas-selected" value="">

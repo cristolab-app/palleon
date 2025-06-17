@@ -1401,19 +1401,33 @@ class Palleon {
         if ( ! wp_verify_nonce( $_POST['nonce'], 'palleon-nonce' ) ) {
             wp_die(esc_html__('Security Error!', 'palleon'));
         }
+        
         $user_fav = get_user_meta(get_current_user_id(), 'palleon_template_fav',true);
         if (empty($user_fav)) {
             $user_fav = array();
         }
-        $random =  PalleonSettings::get_option('template_order', 'random');
-        $templates = palleon_templates();
-        if ($random == 'random') {
-            shuffle($templates);
-        } else if ($random == 'new') {
-            $templates = array_reverse($templates);
-        }
+        
         $keyword = $_POST['keyword'];
         $category = $_POST['category'];
+        
+        // Obtener dimensiones si se proporcionan
+        $dimensions = isset($_POST['dimensions']) ? sanitize_text_field($_POST['dimensions']) : '';
+        
+        // Si hay dimensiones, usar filtrado por dimensiones, sino usar el método tradicional
+        if (!empty($dimensions)) {
+            $templates = $this->get_templates_by_dimensions($dimensions);
+        } else {
+            // Método tradicional
+            $random = PalleonSettings::get_option('template_order', 'random');
+            $templates = palleon_templates();
+            if ($random == 'random') {
+                shuffle($templates);
+            } else if ($random == 'new') {
+                $templates = array_reverse($templates);
+            }
+        }
+        
+        // Aplicar filtro por categoría
         if (!empty($category) && $category != 'all') {
             $filteredArray = array();
             foreach($templates as $template) {
@@ -1423,6 +1437,8 @@ class Palleon {
             }
             $templates = $filteredArray;
         }
+        
+        // Aplicar filtro por keyword
         if (!empty($keyword)) {
             $filteredArray = array();
             foreach($templates as $template) {
