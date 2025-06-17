@@ -373,6 +373,8 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                     .forEach(i => i.classList.remove('selected'));
                 this.classList.add('selected');
 
+                loadAllTemplatesAjax(width, height);
+
                 console.log(
                     document.getElementById('palleon-canvas-create').click()
                 )
@@ -382,6 +384,27 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         window.addEventListener('load', () => {
             document.querySelectorAll('#palleon-canvas-size-grid .grid-item')
                 .forEach(item => requestAnimationFrame(() => adjustCardHeight(item)));
+        });
+    }
+    function loadAllTemplatesAjax(width, height) {
+        const formData = new FormData();
+        formData.append('action', 'loadAllTemplates');
+        formData.append('nonce', '<?php echo wp_create_nonce('palleon-nonce'); ?>');
+        formData.append('dimensions', width + 'x' + height);
+        
+        fetch('/wp-admin/admin-ajax.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(html => {
+            const templatesGrid = document.getElementById('palleon-templates-grid');
+            if (templatesGrid) {
+                templatesGrid.innerHTML = html;
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando templates:', error);
         });
     }
 

@@ -52,6 +52,8 @@ class Palleon {
         add_filter('plugin_row_meta', array($this, 'plugin_links'), 10, 4 );
         add_action('wp_ajax_templateSearch', array($this, 'template_search'));
         add_action('wp_ajax_nopriv_templateSearch', array($this, 'template_search'));
+        add_action('wp_ajax_loadAllTemplates', array($this, 'load_all_templates'));
+        add_action('wp_ajax_nopriv_loadAllTemplates', array($this, 'load_all_templates'));
         add_action('palleon_backend', array($this, 'user_roles'));
         add_action('palleon_backend', array($this, 'pmpro'));
         add_action('palleon_backend', array($this, 'umpro'));
@@ -1361,7 +1363,6 @@ class Palleon {
         update_user_meta(get_current_user_id(),'palleon_template_fav', $selected_templates, false); 
         
         
-        
         if ($selected_templates == array()) {
             echo '<div class="notice notice-info"><h6>' . esc_html__( 'No favorites yet', 'palleon' ) . '</h6>' . esc_html__('Click the star icon on any template, and you will see it here next time you visit.', 'palleon') . '</div>';
         } else {
@@ -1478,6 +1479,55 @@ class Palleon {
             add_user_meta(get_current_user_id(), 'palleon_preferences', $preferences, true);
         } else {
             update_user_meta(get_current_user_id(),'palleon_preferences', $preferences, false);
+        }
+        wp_die();
+    }
+
+    /**
+     * Load All Templates via AJAX
+     */
+    public function load_all_templates(){
+        // Verificar nonce de seguridad
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'palleon-nonce' ) ) {
+            wp_die(esc_html__('Security Error!', 'palleon'));
+        }
+        
+        // Recibir las dimensiones enviadas desde el frontend
+        $dimensions = isset($_POST['dimensions']) ? sanitize_text_field($_POST['dimensions']) : '';
+      
+        // Obtener templates filtrados por dimensiones
+        $templates = $this->get_templates_by_dimensions($dimensions);
+        
+        if (empty($templates)) {
+            echo '<div class="notice notice-warning"><h6>' . esc_html__( 'No templates found', 'palleon' ) . '</h6></div>';
+        } else {
+            foreach($templates as $template) { 
+                $template_version = 'free';
+                if (isset($template[5])) {
+                    $template_version = $template[5]; 
+                }
+                ?>
+                <div class="grid-item">
+                    <?php if ($template_version == 'pro') { ?>
+                    <div class="template-pro"><span class="material-icons">workspace_premium</span></div>
+                    <?php } ?>
+                    <div class="template-favorite">
+                        <button type="button" class="palleon-btn-simple star" data-templateid="<?php echo esc_attr($template[0]); ?>">
+                            <span class="material-icons">star_border</span>
+                        </button>
+                    </div>
+                    <div class="palleon-masonry-item-inner palleon-select-template" data-json="<?php echo esc_url($template[3]); ?>" data-version="<?php echo esc_attr($template_version); ?>">
+                        <div class="palleon-img-wrap">
+                            <div class="palleon-img-loader"></div>
+                            <img class="lazy" data-src="<?php echo esc_url($template[2]); ?>" data-title="<?php echo esc_attr($template[1]); ?>" data-preview="<?php echo esc_url($template[6]); ?>" />
+                        </div>
+                        <div class="palleon-masonry-item-desc">
+                            <?php echo esc_html($template[1]); ?>
+                        </div>
+                    </div>
+                </div>
+                <?php 
+            }
         }
         wp_die();
     }
@@ -1900,6 +1950,71 @@ class Palleon {
                 }
             }
         } 
+    }
+
+    /**
+     * Get Templates Filtered by Dimensions
+     */
+    private function get_templates_by_dimensions($dimensions) {
+        
+        // Si no se especificaron dimensiones, devolver array vacío para debugging
+        if (empty($dimensions)) {
+            return array();
+        }
+        
+        // Obtener templates personalizados que coincidan con las dimensiones
+        $custom_templates = array();
+        
+        // Query para obtener posts de palleontemplates con la taxonomía category_palleon
+        $args = array(
+            'post_type' => 'palleontemplates',
+            'posts_per_page' => -1,
+            'tax_query' => array(
+                array(
+                    'taxonomy' => 'category_palleon',
+                    'field'    => 'slug',
+                    'terms'    => $dimensions,
+                ),
+            ),
+        );
+        
+        $query = new WP_Query($args);
+        
+        if ($query->have_posts()) {
+            while ($query->have_posts()) {
+                $query->the_post();
+                
+                $templateUrl = get_post_meta(get_the_ID(), 'palleon_cmb2_template', true);
+                $templateVersion = get_post_meta(get_the_ID(), 'palleon_cmb2_template_version', true);
+                $imageurl = get_the_post_thumbnail_url(get_the_ID(), 'thumbnail');
+                $largeurl = get_the_post_thumbnail_url(get_the_ID(), 'full');
+                
+                // Obtener tags normales
+                $terms = get_the_terms(get_the_ID(), 'palleontags');
+                $customTags = array();
+                if ($terms) {
+                    foreach ($terms as $term) {
+                        $customTags[] = $term->slug;
+                    }
+                }
+                
+                $custom_templates[] = array(
+                    "custom-template-" . get_the_ID(), 
+                    get_the_title(), 
+                    esc_url($imageurl), 
+                    esc_url($templateUrl), 
+                    $customTags, 
+                    $templateVersion ? $templateVersion : 'free', 
+                    $largeurl
+                );
+            }
+            wp_reset_postdata();
+        }
+        
+        
+        // Solo devolver los templates personalizados filtrados
+        // Si no hay ninguno, devolver array vacío
+        return $custom_templates;
     }
 }
 
