@@ -1871,7 +1871,7 @@
                     p = "visibility",
                     f = "layer-unlocked",
                     g = "lock_open";
-                0 == l.visible && (c = "layer-hidden", p = "visibility_off"), 0 == l.selectable && (f = "layer-locked", g = "lock"), l.set("id", (new Date).getTime()), s.find("#palleon-layers > li").removeClass("active"), "textbox" == l.objectType ? (r = l.text, d = "title") : "drawing" == l.objectType ? (r = palleonParams.freeDrawing, d = "brush") : "frame" == l.objectType ? (r = palleonParams.frame, d = "wallpaper") : "image" == l.objectType ? (r = palleonParams.image, d = "image") : "circle" == l.objectType ? r = palleonParams.circle : "square" == l.objectType ? r = palleonParams.square : "rectangle" == l.objectType ? r = palleonParams.rectangle : "triangle" == l.objectType ? r = palleonParams.triangle : "ellipse" == l.objectType ? r = palleonParams.ellipse : "trapezoid" == l.objectType ? r = palleonParams.trapezoid : "pentagon" == l.objectType ? r = palleonParams.pentagon : "octagon" == l.objectType ? r = palleonParams.octagon : "emerald" == l.objectType ? r = palleonParams.emerald : "diamond" == l.objectType ? r = palleonParams.diamond : "parallelogram" == l.objectType ? r = palleonParams.parallelogram : "star" == l.objectType ? r = palleonParams.star : "element" == l.objectType ? (r = palleonParams.element, d = "star") : "customShape" == l.objectType ? r = palleonParams.customShape : "customSVG" == l.objectType ? r = palleonParams.customSvg : "printarea" == l.objectType ? (r = palleonParams.printArea, d = "print") : "app" == l.objectType && (r = palleonParams.app, d = "apps"), "layerName" in l && (r = l.layerName), o = "frontend" == palleonParams.version && "printarea" == l.objectType ? '<li id="' + l.id + '" data-type="' + l.objectType + '" class="layer-' + l.objectType + ' disabled" data-sort="' + i + '"><span class="material-icons">' + d + '</span><div class="layer-name">' + r + '</div><a class="material-icons layer-visibility ' + c + '" title="' + palleonParams.showhide + '">' + p + "</a></li>" : '<li id="' + l.id + '" data-type="' + l.objectType + '" class="layer-' + l.objectType + ' active" data-sort="' + i + '"><span class="material-icons">' + d + '</span><input type="text" class="layer-name" autocomplete="off" value="' + r + '" /><span class="material-icons layer-settings">settings</span><div class="layer-icons"><a class="material-icons lock-layer ' + f + '" title="' + palleonParams.lockunlock + '">' + g + '</a><a class="material-icons text-success duplicate-layer" title="' + palleonParams.duplicate + '">content_copy</a><a class="material-icons layer-visibility ' + c + '" title="' + palleonParams.showhide + '">' + p + '</a><a class="material-icons text-danger delete-layer" title="' + palleonParams.delete + '">clear</a></div></li>', s.find("#palleon-layers").prepend(o), t = l.id, (n = s.find("#palleon-layers #" + t)).find("a.delete-layer").on("click", function(e) {
+                0 == l.visible && (c = "layer-hidden", p = "visibility_off"), 0 == l.selectable && (f = "layer-locked", g = "lock"), l.set("id", (new Date).getTime()), s.find("#palleon-layers > li").removeClass("active"), "textbox" == l.objectType ? (r = l.text, d = "title") : "drawing" == l.objectType ? (r = palleonParams.freeDrawing, d = "brush") : "frame" == l.objectType ? (r = palleonParams.frame, d = "wallpaper") : "image" == l.objectType ? (r = palleonParams.image, d = "image") : "group" == l.objectType ? (r = palleonParams.group || "Group", d = "group_work") : "circle" == l.objectType ? r = palleonParams.circle : "square" == l.objectType ? r = palleonParams.square : "rectangle" == l.objectType ? r = palleonParams.rectangle : "triangle" == l.objectType ? r = palleonParams.triangle : "ellipse" == l.objectType ? r = palleonParams.ellipse : "trapezoid" == l.objectType ? r = palleonParams.trapezoid : "pentagon" == l.objectType ? r = palleonParams.pentagon : "octagon" == l.objectType ? r = palleonParams.octagon : "emerald" == l.objectType ? r = palleonParams.emerald : "diamond" == l.objectType ? r = palleonParams.diamond : "parallelogram" == l.objectType ? r = palleonParams.parallelogram : "star" == l.objectType ? r = palleonParams.star : "element" == l.objectType ? (r = palleonParams.element, d = "star") : "customShape" == l.objectType ? r = palleonParams.customShape : "customSVG" == l.objectType ? r = palleonParams.customSvg : "printarea" == l.objectType ? (r = palleonParams.printArea, d = "print") : "app" == l.objectType && (r = palleonParams.app, d = "apps"), "layerName" in l && (r = l.layerName), o = "frontend" == palleonParams.version && "printarea" == l.objectType ? '<li id="' + l.id + '" data-type="' + l.objectType + '" class="layer-' + l.objectType + ' disabled" data-sort="' + i + '"><span class="material-icons">' + d + '</span><div class="layer-name">' + r + '</div><a class="material-icons layer-visibility ' + c + '" title="' + palleonParams.showhide + '">' + p + "</a></li>" : '<li id="' + l.id + '" data-type="' + l.objectType + '" class="layer-' + l.objectType + ' active" data-sort="' + i + '"><span class="material-icons">' + d + '</span><input type="text" class="layer-name" autocomplete="off" value="' + r + '" /><span class="material-icons layer-settings">settings</span><div class="layer-icons"><a class="material-icons lock-layer ' + f + '" title="' + palleonParams.lockunlock + '">' + g + '</a><a class="material-icons text-success duplicate-layer" title="' + palleonParams.duplicate + '">content_copy</a><a class="material-icons layer-visibility ' + c + '" title="' + palleonParams.showhide + '">' + p + '</a><a class="material-icons text-danger delete-layer" title="' + palleonParams.delete + '">clear</a></div></li>', s.find("#palleon-layers").prepend(o), t = l.id, (n = s.find("#palleon-layers #" + t)).find("a.delete-layer").on("click", function(e) {
                         e.preventDefault(), j.fire("palleon:history", {
                             type: n.data("type"),
                             text: palleonParams.removed
@@ -4633,7 +4633,62 @@
             "brush-width" == e(this).attr("id") ? (S.width = parseInt(e(this).val()), He(S.width * j.getZoom(), S.color)) : "brush-shadow-shadow-offset-x" == e(this).attr("id") ? T.offsetX = parseInt(e(this).val()) : "brush-shadow-shadow-offset-y" == e(this).attr("id") ? T.offsetY = parseInt(e(this).val()) : "brush-shadow-width" == e(this).attr("id") ? T.blur = parseInt(e(this).val()) : "brush-pattern-width" == e(this).attr("id") ? s.find("#palleon-brush-select").trigger("change") : "brush-pattern-distance" == e(this).attr("id") && s.find("#palleon-brush-select").trigger("change")
         }), s.find("#palleon-draw-settings .palleon-colorpicker").bind("change", function() {
             "brush-color" == e(this).attr("id") ? (S.color = e(this).val(), He(S.width * j.getZoom(), S.color), s.find("#palleon-brush-select").trigger("change")) : "brush-shadow-color" == e(this).attr("id") && (T.color = e(this).val())
-        }), document.onkeydown = function(a) {
+        });
+
+        // Función para agrupar objetos seleccionados
+        function groupSelectedObjects() {
+            var activeObject = j.getActiveObject();
+            if (activeObject && activeObject.type === 'activeSelection') {
+                // Guardar los objetos originales antes de agrupar
+                var originalObjects = activeObject._objects.slice();
+                
+                // Convertir la selección activa en un grupo
+                var group = activeObject.toGroup();
+                group.set({
+                    objectType: 'group',
+                    id: (new Date).getTime()
+                });
+                j.requestRenderAll();
+                
+                // Eliminar las capas individuales de los objetos agrupados
+                originalObjects.forEach(function(obj) {
+                    s.find("#palleon-layers #" + obj.id).remove();
+                });
+                
+                // El grupo ya fue agregado al canvas por toGroup(), no necesitamos agregarlo manualmente
+                // Solo necesitamos actualizar las capas y activar el sorting
+                ue();
+                
+                j.fire("palleon:history", {
+                    type: "group",
+                    text: palleonParams.grouped || "Objects Grouped"
+                });
+            }
+        }
+
+        // Función para desagrupar objetos
+        function ungroupSelectedObjects() {
+            var activeObject = j.getActiveObject();
+            if (activeObject && activeObject.type === 'group') {
+                // Eliminar la capa del grupo
+                s.find("#palleon-layers #" + activeObject.id).remove();
+                
+                // Convertir el grupo de vuelta a selección activa
+                var items = activeObject.toActiveSelection();
+                j.requestRenderAll();
+                
+                // Los objetos individuales ya fueron agregados de vuelta al canvas por toActiveSelection()
+                // Solo necesitamos actualizar las capas
+                ue();
+                
+                j.fire("palleon:history", {
+                    type: "ungroup", 
+                    text: palleonParams.ungrouped || "Objects Ungrouped"
+                });
+            }
+        }
+
+        document.onkeydown = function(a) {
             var t = j.getActiveObject();
             switch (a.keyCode) {
                 case 38:
@@ -4655,6 +4710,15 @@
                         }), j.discardActiveObject();
                         else s.find("#palleon-layers #" + t.id).find("a.delete-layer").trigger("click");
                         j.requestRenderAll()
+                    }
+                    break;
+                case 71: // G key for grouping
+                    if (a.ctrlKey && !a.shiftKey && t && "activeSelection" === t.type && !e("input").is(":focus") && !e("textarea").is(":focus")) {
+                        a.preventDefault();
+                        groupSelectedObjects();
+                    } else if (a.ctrlKey && a.shiftKey && t && "group" === t.type && !e("input").is(":focus") && !e("textarea").is(":focus")) {
+                        a.preventDefault();
+                        ungroupSelectedObjects();
                     }
             }
         }, s.find("#custom-theme").on("change", function() {
@@ -4713,10 +4777,4 @@
     }).catch(function(a) {
         console.log(a), e("#palleon").find("#palleon-main-loader").remove()
     })
-}(jQuery); // This is just a sample script. Paste your real code (javascript or HTML) here.
-
-if ('this_is' == /an_example/) {
-    of_beautifier();
-} else {
-    var a = b ? (c % d) : e[f];
-}
+}(jQuery);

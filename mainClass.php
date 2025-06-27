@@ -895,7 +895,10 @@ class Palleon {
             "select": "<?php echo esc_html__('Select', 'palleon'); ?>",
             "notitle": "<?php echo esc_html__('(No Title)', 'palleon'); ?>",
             "nocolor": "<?php echo esc_html__('No colors found.', 'palleon'); ?>",
-            "wrongFormat":"<?php echo esc_html__('Only JPG, JPEG, PNG and WEBP file formats are supported.', 'palleon'); ?>"
+            "wrongFormat":"<?php echo esc_html__('Only JPG, JPEG, PNG and WEBP file formats are supported.', 'palleon'); ?>",
+            "group": "<?php echo esc_html__('Group', 'palleon'); ?>",
+            "grouped": "<?php echo esc_html__('Objects grouped.', 'palleon'); ?>",
+            "ungrouped": "<?php echo esc_html__('Objects ungrouped.', 'palleon'); ?>"
         };
         /* ]]> */
         </script>
