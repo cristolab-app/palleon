@@ -712,7 +712,9 @@ class Palleon {
             'color-thief' => array(PALLEON_PLUGIN_URL . 'js/color-thief.min.js', PALLEON_VERSION),
             'trianglify' => array(PALLEON_PLUGIN_URL . 'js/trianglify.min.js', PALLEON_VERSION),
             'multiavatar' => array(PALLEON_PLUGIN_URL . 'js/multiavatar.min.js', PALLEON_VERSION),
-            'palleon-js' => array(PALLEON_PLUGIN_URL . 'js/palleon' . $suffix . '.js', PALLEON_VERSION),
+            //'palleon-js' => array(PALLEON_PLUGIN_URL . 'js/palleon' . $suffix . '.js', PALLEON_VERSION),
+            // For development debugging, use: 
+            'palleon-js' => array(PALLEON_PLUGIN_URL . 'js/palleon.js', PALLEON_VERSION),
         );
 
         if ($qrcode == 'disable') {
@@ -746,6 +748,7 @@ class Palleon {
 
         if(isset($_GET['page']) && !empty($_GET['page']) && ($_GET['page'] == $slug || $_GET['page'] == $be_slug) && !wp_doing_ajax()) { 
             $scripts['init'] = array(PALLEON_PLUGIN_URL . 'js/init'.$suffix.'.js', PALLEON_VERSION);
+            // For development debugging, use: $scripts['init'] = array(PALLEON_PLUGIN_URL . 'js/init.js', PALLEON_VERSION);
         }
 
         $scripts = apply_filters('palleonScripts', $scripts);
