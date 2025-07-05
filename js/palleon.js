@@ -334,6 +334,125 @@
             e.save(), e.translate(a, t), e.rotate(fabric.util.degreesToRadians(l.angle)), e.drawImage(J, -12, -12, 24, 24), e.restore()
         }
 
+        // Imagen del icono de agrupamiento
+        var groupIcon = document.createElement("img");
+        
+        // Imagen del icono de desagrupamiento
+        var ungroupIcon = document.createElement("img");
+
+        // Función para manejar el click del control de agrupamiento
+        function groupControlHandler(e, a) {
+            var t = a.target;
+            if ("activeSelection" === t.type) {
+                groupSelectedObjects();
+            }
+        }
+
+        // Función para renderizar el control de agrupamiento
+        function renderGroupControl(e, a, t, n, l) {
+            e.save(), e.translate(a, t), e.rotate(fabric.util.degreesToRadians(l.angle)), e.drawImage(groupIcon, -12, -12, 24, 24), e.restore()
+        }
+
+        // Función para manejar el click del control de desagrupamiento
+        function ungroupControlHandler(e, a) {
+            var t = a.target;
+            if ("group" === t.type) {
+                ungroupSelectedObjects();
+            }
+        }
+
+        // Función para renderizar el control de desagrupamiento  
+        function renderUngroupControl(e, a, t, n, l) {
+            e.save(), e.translate(a, t), e.rotate(fabric.util.degreesToRadians(l.angle)), e.drawImage(ungroupIcon, -12, -12, 24, 24), e.restore()
+        }
+
+        // Función para agrupar objetos seleccionados
+        function groupSelectedObjects() {
+            var activeObject = j.getActiveObject();
+            if (activeObject && activeObject.type === 'activeSelection') {
+                // Guardar los objetos originales antes de agrupar
+                var originalObjects = activeObject._objects.slice();
+                
+                // Convertir la selección activa en un grupo
+                var group = activeObject.toGroup();
+                group.set({
+                    id: (new Date).getTime(),
+                    objectType: 'group'  // Asegurar que tenga el objectType correcto
+                });
+                
+                // Eliminar las capas individuales de los objetos agrupados
+                originalObjects.forEach(function(obj) {
+                    s.find("#palleon-layers #" + obj.id).remove();
+                });
+                
+                // Actualizar las capas y activar el sorting
+                ue();
+                j.requestRenderAll();
+                
+                j.fire("palleon:history", {
+                    type: "group",
+                    text: palleonParams.grouped || "Objects Grouped"
+                });
+                
+                // Forzar la actualización de controles después del agrupamiento
+                setTimeout(function() {
+                    var newActiveObject = j.getActiveObject();
+                    if (newActiveObject && newActiveObject.type === 'group') {
+                        newActiveObject.controls.ungroupControl = new fabric.Control({
+                            x: 0,
+                            y: .5,
+                            offsetY: 22,
+                            offsetX: -42,
+                            cursorStyle: "pointer",
+                            mouseUpHandler: ungroupControlHandler,
+                            render: renderUngroupControl,
+                            cornerSize: 24
+                        });
+                        j.requestRenderAll();
+                    }
+                }, 100);
+            }
+        }
+
+        // Función para desagrupar objetos
+        function ungroupSelectedObjects() {
+            var activeObject = j.getActiveObject();
+            if (activeObject && activeObject.type === 'group') {
+                // Eliminar la capa del grupo
+                s.find("#palleon-layers #" + activeObject.id).remove();
+                
+                // Convertir el grupo de vuelta a selección activa
+                var items = activeObject.toActiveSelection();
+                
+                // Actualizar las capas
+                ue();
+                j.requestRenderAll();
+                
+                j.fire("palleon:history", {
+                    type: "ungroup", 
+                    text: palleonParams.ungrouped || "Objects Ungrouped"
+                });
+                
+                // Forzar la actualización de controles después del desagrupamiento
+                setTimeout(function() {
+                    var newActiveObject = j.getActiveObject();
+                    if (newActiveObject && newActiveObject.type === 'activeSelection') {
+                        newActiveObject.controls.groupControl = new fabric.Control({
+                            x: 0,
+                            y: .5,
+                            offsetY: 22,
+                            offsetX: -42,
+                            cursorStyle: "pointer",
+                            mouseUpHandler: groupControlHandler,
+                            render: renderGroupControl,
+                            cornerSize: 24
+                        });
+                        j.requestRenderAll();
+                    }
+                }, 100);
+            }
+        }
+
         function $(e, a) {
             "" == e && (e = (new Date).getTime()), "" == a ? a = "jpeg" : ".jpg" == a ? a = "jpeg" : "jpg" == a ? a = "jpeg" : ".png" == a ? a = "png" : ".webp" == a ? a = "webp" : ".tiff" == a && (a = "tiff"), s.find(".palleon-file-name").val(e), s.find(".palleon-file-name").data("default", e), s.find("#palleon-save-img-format").val(a).change(), s.find("#palleon-download-format").val(a).change()
         }
@@ -377,7 +496,10 @@
                 }, 500)
             })
         }
-        if (J.src = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='tm_add_btn' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='512px' height='512px' viewBox='0 0 512 512' style='enable-background:new 0 0 512 512;' xml:space='preserve'%3E%3Ccircle style='fill:%23009688;' cx='256' cy='256' r='256'/%3E%3Cg%3E%3Crect x='240' y='120' style='fill:%23FFFFFF;' width='32' height='272'/%3E%3Crect x='120' y='240' style='fill:%23FFFFFF;' width='272' height='32'/%3E%3C/g%3E%3C/svg%3E", fabric.Image.filters.Shift = fabric.util.createClass(fabric.Image.filters.ColorMatrix, {
+        if (J.src = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='tm_add_btn' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='512px' height='512px' viewBox='0 0 512 512' style='enable-background:new 0 0 512 512;' xml:space='preserve'%3E%3Ccircle style='fill:%23009688;' cx='256' cy='256' r='256'/%3E%3Cg%3E%3Crect x='240' y='120' style='fill:%23FFFFFF;' width='32' height='272'/%3E%3Crect x='120' y='240' style='fill:%23FFFFFF;' width='272' height='32'/%3E%3C/g%3E%3C/svg%3E", 
+        groupIcon.src = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='tm_group_btn' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='512px' height='512px' viewBox='0 0 512 512' style='enable-background:new 0 0 512 512;' xml:space='preserve'%3E%3Ccircle style='fill:%236658ea;' cx='256' cy='256' r='256'/%3E%3Cg%3E%3Crect x='140' y='180' style='fill:%23FFFFFF;' width='120' height='120' rx='10'/%3E%3Crect x='252' y='180' style='fill:%23FFFFFF;' width='120' height='120' rx='10'/%3E%3Crect x='140' y='212' style='fill:%23FFFFFF;' width='120' height='120' rx='10'/%3E%3Crect x='252' y='212' style='fill:%23FFFFFF;' width='120' height='120' rx='10'/%3E%3C/g%3E%3C/svg%3E", 
+        ungroupIcon.src = "data:image/svg+xml,%3C%3Fxml version='1.0' encoding='utf-8'%3F%3E%3C!DOCTYPE svg PUBLIC '-//W3C//DTD SVG 1.1//EN' 'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'%3E%3Csvg version='1.1' id='tm_ungroup_btn' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' width='512px' height='512px' viewBox='0 0 512 512' style='enable-background:new 0 0 512 512;' xml:space='preserve'%3E%3Ccircle style='fill:%23ff9800;' cx='256' cy='256' r='256'/%3E%3Cg%3E%3Crect x='120' y='160' style='fill:%23FFFFFF;' width='100' height='100' rx='8'/%3E%3Crect x='292' y='160' style='fill:%23FFFFFF;' width='100' height='100' rx='8'/%3E%3Crect x='120' y='252' style='fill:%23FFFFFF;' width='100' height='100' rx='8'/%3E%3Crect x='292' y='252' style='fill:%23FFFFFF;' width='100' height='100' rx='8'/%3E%3C/g%3E%3C/svg%3E", 
+        fabric.Image.filters.Shift = fabric.util.createClass(fabric.Image.filters.ColorMatrix, {
                 type: "Shift",
                 matrix: [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0],
                 mainParameter: !1,
@@ -1945,6 +2067,7 @@
                             cornerSize: 24
                         })
                     }(l), function(e) {
+                        // Agregar control de duplicar para objetos individuales
                         e.controls.cloneControl = new fabric.Control({
                             x: 0,
                             y: .5,
@@ -1954,7 +2077,7 @@
                             mouseUpHandler: Z,
                             render: K,
                             cornerSize: 24
-                        })
+                        });
                     }(l)) : function(e) {
                         e.controls = {
                             ...fabric.Rect.prototype.controls,
@@ -2015,10 +2138,101 @@
                 a = j.getObjects().filter(e => "printarea" == e.objectType)[0];
             a && "printarea" != e.objectType ? (e.set("top", a.top - a.height / 2 + (a.getScaledHeight() - e.getScaledHeight()) / 2), e.set("top", Re()[1] / 2)) : (e.set("originY", "center"), e.set("top", Re()[1] / 2)), j.requestRenderAll()
         }), j.on("selection:created", function(e) {
-            be(e.selected)
+            be(e.selected);
+            // Limpiar controles previos
+            var objects = j.getObjects();
+            objects.forEach(function(obj) {
+                if (obj.controls.groupControl) {
+                    delete obj.controls.groupControl;
+                }
+                if (obj.controls.ungroupControl) {
+                    delete obj.controls.ungroupControl;
+                }
+            });
+            
+            // Agregar controles apropiados según el tipo de selección
+            var activeObject = j.getActiveObject();
+            if (activeObject) {
+                if (activeObject.type === 'activeSelection') {
+                    // Para múltiples objetos seleccionados - mostrar control de agrupamiento
+                    activeObject.controls.groupControl = new fabric.Control({
+                        x: 0,
+                        y: .5,
+                        offsetY: 22,
+                        offsetX: -42, // Posición a la izquierda del duplicar
+                        cursorStyle: "pointer",
+                        mouseUpHandler: groupControlHandler,
+                        render: renderGroupControl,
+                        cornerSize: 24
+                    });
+                } else if (activeObject.type === 'group') {
+                    // Para grupos - mostrar control de desagrupamiento
+                    activeObject.controls.ungroupControl = new fabric.Control({
+                        x: 0,
+                        y: .5,
+                        offsetY: 22,
+                        offsetX: -42,
+                        cursorStyle: "pointer",
+                        mouseUpHandler: ungroupControlHandler,
+                        render: renderUngroupControl,
+                        cornerSize: 24
+                    });
+                }
+            }
         }), j.on("selection:updated", function(e) {
-            be(e.selected)
+            be(e.selected);
+            // Limpiar controles previos
+            var objects = j.getObjects();
+            objects.forEach(function(obj) {
+                if (obj.controls.groupControl) {
+                    delete obj.controls.groupControl;
+                }
+                if (obj.controls.ungroupControl) {
+                    delete obj.controls.ungroupControl;
+                }
+            });
+            
+            // Agregar controles apropiados según el tipo de selección
+            var activeObject = j.getActiveObject();
+            if (activeObject) {
+                if (activeObject.type === 'activeSelection') {
+                    // Para múltiples objetos seleccionados - mostrar control de agrupamiento
+                    activeObject.controls.groupControl = new fabric.Control({
+                        x: 0,
+                        y: .5,
+                        offsetY: 22,
+                        offsetX: -42, // Posición a la izquierda del duplicar
+                        cursorStyle: "pointer",
+                        mouseUpHandler: groupControlHandler,
+                        render: renderGroupControl,
+                        cornerSize: 24
+                    });
+                } else if (activeObject.type === 'group') {
+                    // Para grupos - mostrar control de desagrupamiento
+                    activeObject.controls.ungroupControl = new fabric.Control({
+                        x: 0,
+                        y: .5,
+                        offsetY: 22,
+                        offsetX: -42,
+                        cursorStyle: "pointer",
+                        mouseUpHandler: ungroupControlHandler,
+                        render: renderUngroupControl,
+                        cornerSize: 24
+                    });
+                }
+            }
         }), j.on("selection:cleared", function() {
+            // Limpiar todos los controles de agrupamiento/desagrupamiento cuando se limpia la selección
+            var objects = j.getObjects();
+            objects.forEach(function(obj) {
+                if (obj.controls.groupControl) {
+                    delete obj.controls.groupControl;
+                }
+                if (obj.controls.ungroupControl) {
+                    delete obj.controls.ungroupControl;
+                }
+            });
+            
             g ? (je(n), s.find("#crop-image-object").removeClass("d-none"), s.find("#crop-image-object-selection").addClass("d-none"), s.find("#palleon-icon-menu, #palleon-top-bar, #palleon-right-col, #palleon-img-upload-wrap, #palleon-img-media-library, #palleon-image-settings > *, .palleon-content-bar, #agama-print-areas").css("pointer-events", "auto")) : (s.find("#palleon-text-settings").hide(), s.find("#palleon-image-settings").hide(), s.find("#palleon-shape-settings").hide(), s.find("#palleon-custom-element-options").hide(), s.find("#palleon-shape-settings-info").show(), s.find("#palleon-custom-svg-options").hide(), s.find("#palleon-layers > li").removeClass("active"))
         }), s.find("#palleon-layers").sortable({
             items: "li:not(.disabled)",
@@ -4634,59 +4848,6 @@
         }), s.find("#palleon-draw-settings .palleon-colorpicker").bind("change", function() {
             "brush-color" == e(this).attr("id") ? (S.color = e(this).val(), He(S.width * j.getZoom(), S.color), s.find("#palleon-brush-select").trigger("change")) : "brush-shadow-color" == e(this).attr("id") && (T.color = e(this).val())
         });
-
-        // Función para agrupar objetos seleccionados
-        function groupSelectedObjects() {
-            var activeObject = j.getActiveObject();
-            if (activeObject && activeObject.type === 'activeSelection') {
-                // Guardar los objetos originales antes de agrupar
-                var originalObjects = activeObject._objects.slice();
-                
-                // Convertir la selección activa en un grupo
-                var group = activeObject.toGroup();
-                group.set({
-                    objectType: 'group',
-                    id: (new Date).getTime()
-                });
-                j.requestRenderAll();
-                
-                // Eliminar las capas individuales de los objetos agrupados
-                originalObjects.forEach(function(obj) {
-                    s.find("#palleon-layers #" + obj.id).remove();
-                });
-                
-                // El grupo ya fue agregado al canvas por toGroup(), no necesitamos agregarlo manualmente
-                // Solo necesitamos actualizar las capas y activar el sorting
-                ue();
-                
-                j.fire("palleon:history", {
-                    type: "group",
-                    text: palleonParams.grouped || "Objects Grouped"
-                });
-            }
-        }
-
-        // Función para desagrupar objetos
-        function ungroupSelectedObjects() {
-            var activeObject = j.getActiveObject();
-            if (activeObject && activeObject.type === 'group') {
-                // Eliminar la capa del grupo
-                s.find("#palleon-layers #" + activeObject.id).remove();
-                
-                // Convertir el grupo de vuelta a selección activa
-                var items = activeObject.toActiveSelection();
-                j.requestRenderAll();
-                
-                // Los objetos individuales ya fueron agregados de vuelta al canvas por toActiveSelection()
-                // Solo necesitamos actualizar las capas
-                ue();
-                
-                j.fire("palleon:history", {
-                    type: "ungroup", 
-                    text: palleonParams.ungrouped || "Objects Ungrouped"
-                });
-            }
-        }
 
         document.onkeydown = function(a) {
             var t = j.getActiveObject();

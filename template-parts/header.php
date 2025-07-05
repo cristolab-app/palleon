@@ -22,6 +22,19 @@
             }
         } ?>
         <?php do_action('palleon_head'); ?>
+		<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const urlParams = new URLSearchParams(window.location.search);
+    const templateId = urlParams.get('template_id');
+
+    if (templateId !== null) {
+      const button = document.getElementById('palleon-btn-templates');
+      if (button) {
+        button.style.display = 'none';
+      }
+    }
+  });
+</script>
     </head>
     <?php
     $bodyClasses = '';
