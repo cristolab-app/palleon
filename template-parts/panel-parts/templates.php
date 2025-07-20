@@ -9,110 +9,47 @@ $myperpage = PalleonSettings::get_option('mytp_pagination',10);
 if (PalleonSettings::get_option('module_templates', 'enable') === 'enable'):
     // Obtener paginación
     $perpage = PalleonSettings::get_option('tp_pagination', 21);
-    // Cargar plantillas
-    $templates = palleon_get_templates(false);
 ?>
+
+<!-- CÓDIGO HARDCODEADO PARA PRUEBAS -->
 <div id="palleon-templates" class="palleon-icon-panel-content panel-hide">
 <div class="palleon-tabs">
                             <ul class="palleon-tabs-menu" style="margin: 0px 0 61px;">
-                                <li class="active" data-target="#palleon-all-templates"><?php echo esc_html__('All', 'palleon'); ?></li>
+                                <li class="active" data-target="#palleon-all-templates">All</li>
                                 <?php if (is_user_logged_in()) { ?>
-                                <li data-target="#palleon-templates-favorites"><?php echo esc_html__('My Favorites', 'palleon'); ?></li>
+                                <li data-target="#palleon-templates-favorites">My Favorites</li>
                                 <?php } ?>
                                 <?php if ($mytemplates == 'enable' && is_user_logged_in()) { ?>
-                                <li data-target="#palleon-my-templates-tab"><?php echo esc_html__('My Templates', 'palleon'); ?></li>
+                                <li data-target="#palleon-my-templates-tab">My Templates</li>
                                 <?php } ?>
                             </ul>
                             <div id="palleon-all-templates" class="palleon-tab active">
                                 <div class="palleon-templates-menu-wrap">
-                                    <input id="palleon-template-search-keyword" type="search" class="palleon-form-field" placeholder="<?php echo esc_html__('Search by keyword...', 'palleon'); ?>" autocomplete="off" />
+                                    <input id="palleon-template-search-keyword" type="search" class="palleon-form-field" placeholder="Search by keyword..." autocomplete="off" />
                                     <select id="palleon-templates-menu" class="palleon-select palleon-select2" autocomplete="off">
-                                        <option value="all" selected><?php echo esc_html__('All Tags', 'palleon') . ' (' . palleon_get_template_count() . ')'; ?></option>
-                                        <?php 
-                                        $getTags = palleon_get_template_tags();
-                                        foreach($getTags as $slug => $name) {
-                                            echo '<option value="' . esc_attr($slug) . '">' . esc_html($name) . '</option>';
-                                        }
-                                        ?>
+                                        <option value="all" selected>All Tags (12)</option>
+                                        <option value="business">Business (5)</option>
+                                        <option value="social">Social Media (4)</option>
+                                        <option value="marketing">Marketing (4)</option>
+                                        <option value="creative">Creative (4)</option>
+                                        <option value="education">Education (2)</option>
+                                        <option value="template">Template (2)</option>
+                                        <option value="design">Design (3)</option>
                                     </select>
                                     <button id="palleon-template-search" type="button" class="palleon-btn primary"><span class="material-icons">search</span></button>
                                 </div>
                                 <div class="palleon-templates-content">
                                     <div class="palleon-grid-wrap">
-                                        <div id="palleon-templates-grid" class="palleon-grid template-grid template-selection paginated" data-perpage="<?php echo esc_attr($perpage); ?>">
-                                            <?php 
-                                            $user_fav = get_user_meta(get_current_user_id(), 'palleon_template_fav',true);
-                                            if (empty($user_fav)) {
-                                                $user_fav = array();
-                                            }
-                                            $getTemplates = palleon_get_templates(false);
-                                            foreach($getTemplates as $template) { 
-                                            $btn_class = '';
-                                            $icon = 'star_border';
-                                            if (in_array($template[0], $user_fav)) {
-                                                $btn_class = 'favorited';
-                                                $icon = 'star';
-                                            }
-                                            $template_version = 'free';
-                                            if (isset($template[5])) {
-                                                $template_version = $template[5]; 
-                                            }
-                                            ?>
-                                            <div class="grid-item">
-                                                <?php if ($template_version == 'pro') { ?>
-                                                <div class="template-pro"><span class="material-icons">workspace_premium</span></div>
-                                                <?php } ?>
-                                                <div class="template-favorite"><button type="button" class="palleon-btn-simple star <?php echo esc_attr($btn_class); ?>" data-templateid="<?php echo esc_attr($template[0]); ?>"><span class="material-icons"><?php echo esc_html($icon); ?></span></button></div>
-                                                <div class="palleon-masonry-item-inner palleon-select-template" data-json="<?php echo esc_url($template[3]); ?>" data-version="<?php echo esc_attr($template_version); ?>">
-                                                    <div class="palleon-img-wrap">
-                                                        <div class="palleon-img-loader"></div>
-                                                        <img class="lazy" data-src="<?php echo esc_url($template[2]); ?>" data-title="<?php echo esc_attr($template[1]); ?>" data-preview="<?php echo esc_url($template[6]); ?>" />
-                                                    </div>
-                                                    <div class="palleon-masonry-item-desc">
-                                                    <?php echo esc_html($template[1]); ?>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <?php } ?>
+                                        <div id="palleon-templates-grid" class="palleon-grid template-grid template-selection paginated" data-perpage="21">
+                                            <!-- Los templates se cargarán dinámicamente vía AJAX -->
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <?php if (is_user_logged_in()) { ?>
                             <div id="palleon-templates-favorites" class="palleon-tab">
-                                <div id="palleon-templates-favorites-grid" class="palleon-grid template-grid template-selection paginated" data-perpage="<?php echo esc_attr($perpage); ?>">
-                                    <?php 
-                                    $templates = palleon_get_templates(false);
-                                    $user_fav = get_user_meta(get_current_user_id(), 'palleon_template_fav',true);
-                                    if (!empty($user_fav)) {
-                                        foreach($templates as $template) { 
-                                            if (in_array($template[0], $user_fav)) { 
-                                                $template_version = 'free';
-                                                if (isset($template[5])) {
-                                                    $template_version = $template[5]; 
-                                                }
-                                            ?>
-                                            <div class="grid-item">
-                                                <?php if ($template_version == 'pro') { ?>
-                                                <div class="template-pro"><span class="material-icons">workspace_premium</span></div>
-                                                <?php } ?>
-                                                <div class="template-favorite"><button type="button" class="palleon-btn-simple star favorited" data-templateid="<?php echo esc_url($template[0]); ?>"><span class="material-icons">star</span></button></div>
-                                                <div class="palleon-masonry-item-inner palleon-select-template" data-json="<?php echo esc_url($template[3]); ?>" data-version="<?php echo esc_attr($template_version); ?>">
-                                                    <div class="palleon-img-wrap">
-                                                        <div class="palleon-img-loader"></div>
-                                                        <img class="lazy" data-src="<?php echo esc_url($template[2]); ?>" data-title="<?php echo esc_attr($template[1]); ?>" data-preview="<?php echo esc_url($template[6]); ?>" />
-                                                    </div>
-                                                    <div class="palleon-masonry-item-desc">
-                                                    <?php echo esc_html($template[1]); ?>
-                                                    </div>
-                                                </div>
-                                            </div>  
-                                        <?php }
-                                        }
-                                    } else {
-                                        echo '<div class="notice notice-info"><h6>' . esc_html__( 'No favorites yet', 'palleon' ) . '</h6>' . esc_html__('Click the star icon on any template, and you will see it here next time you visit.', 'palleon') . '</div>';
-                                    }
-                                    ?>
+                                <div id="palleon-templates-favorites-grid" class="palleon-grid template-grid template-selection paginated" data-perpage="21">
+                                    <div class="notice notice-info"><h6>No favorites yet</h6>Click the star icon on any template, and you will see it here next time you visit.</div>
                                 </div>
                             </div>
                             <?php } ?>
@@ -120,51 +57,448 @@ if (PalleonSettings::get_option('module_templates', 'enable') === 'enable'):
                     <div id="palleon-my-templates-tab" class="palleon-tab">
                     <div id="palleon-my-templates-menu">
                         <div class="palleon-search-box">
-                            <input type="search" class="palleon-form-field" placeholder="<?php echo esc_html__('Search by title...', 'palleon'); ?>" autocomplete="off" />
+                            <input type="search" class="palleon-form-field" placeholder="Search by title..." autocomplete="off" />
                             <button id="palleon-my-templates-search" type="button" class="palleon-btn primary"><span class="material-icons">search</span></button>
                         </div>
                     </div>
                     <ul id="palleon-my-templates" class="palleon-template-list template-selection paginated" data-perpage="<?php echo esc_attr($myperpage); ?>"></ul>
-                    <div id="palleon-my-templates-noimg" class="notice notice-warning d-none"><?php echo esc_html__('Nothing found.', 'palleon'); ?></div>
+                    <div id="palleon-my-templates-noimg" class="notice notice-warning d-none">Nothing found.</div>
                 </div>    
                 <?php } ?>
-                 <?php if ($mytemplates == 'enable' && is_user_logged_in()) { ?>
-                    <div id="palleon-my-templates-tab" class="palleon-tab">
-                    <div id="palleon-my-templates-menu">
-                        <div class="palleon-search-box">
-                            <input type="search" class="palleon-form-field" placeholder="<?php echo esc_html__('Search by title...', 'palleon'); ?>" autocomplete="off" />
-                            <button id="palleon-my-templates-search" type="button" class="palleon-btn primary"><span class="material-icons">search</span></button>
-                        </div>
-                    </div>
-                    <ul id="palleon-my-templates" class="palleon-template-list template-selection paginated" data-perpage="<?php echo esc_attr($myperpage); ?>"></ul>
-                    <div id="palleon-my-templates-noimg" class="notice notice-warning d-none"><?php echo esc_html__('Nothing found.', 'palleon'); ?></div>
-                </div>    
-                <?php } ?>
-                        </div>
-                       
+                </div>
 </div>
+<!-- FIN CÓDIGO HARDCODEADO PARA PRUEBAS -->
+
+<style>
+/* Estilos para la paginación */
+.palleon-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20px 0;
+    gap: 5px;
+}
+
+.palleon-pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 35px;
+    height: 35px;
+    padding: 8px 12px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    background: #fff;
+    color: #333;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.palleon-pagination a:hover {
+    background: #f5f5f5;
+    border-color: #007cba;
+}
+
+.palleon-pagination a.current {
+    background: #007cba;
+    color: #fff;
+    border-color: #007cba;
+}
+
+.palleon-pagination a.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.palleon-pagination .material-icons {
+    font-size: 18px;
+}
+</style>
+
                 <?php endif; ?>
 
 <script>
-;(function(){
-  'use strict';
-  const canvas = document.querySelector('#palleon-canvas-wrap canvas');
-  if (!canvas) return;
-  const targetW = canvas.width, targetH = canvas.height;
-  const items = document.querySelectorAll('#palleon-templates-grid .grid-item');
-  items.forEach(item => {
-    const url = item.dataset.json;
-    fetch(url)
-      .then(res => res.json())
-      .then(data => {
-        // JSON debe incluir width y height
-        if (data.width === targetW && data.height === targetH) {
-          item.style.display = '';
-        } else {
-          item.style.display = 'none';
+jQuery(document).ready(function($) {
+    'use strict';
+    
+    // Variables globales
+    let templatesData = [];
+    let currentFilter = 'all';
+    let currentKeyword = '';
+    let isLoading = false;
+    
+    console.log('🚀 Sistema de templates iniciado');
+    
+    // Función para cargar templates vía AJAX
+    function loadTemplatesViaAjax() {
+        console.log('📡 Iniciando carga de templates via AJAX...');
+        
+        if (isLoading) {
+            console.log('⚠️ Ya hay una carga en progreso, saltando...');
+            return;
         }
-      })
-      .catch(() => { /* si falla, mostrar*/ item.style.display = '' });
-  });
-})();
+        
+        const templatesGrid = $('#palleon-templates-grid');
+        if (!templatesGrid.length) {
+            console.error('❌ Grid de templates no encontrado (#palleon-templates-grid)');
+            return;
+        }
+        
+        console.log('✅ Grid encontrado, elementos:', templatesGrid.length);
+        
+        isLoading = true;
+        
+        // Mostrar loader
+        templatesGrid.html('<div class="palleon-templates-loader"><div class="palleon-loader"></div><p>Cargando templates...</p></div>');
+        
+        // Obtener dimensiones del canvas
+        const canvasWidth = window.palleonWidth || 1200;
+        const canvasHeight = window.palleonHeight || 800;
+        
+        console.log('📏 Dimensiones del canvas:', canvasWidth + 'x' + canvasHeight);
+        
+        // Preparar datos para AJAX
+        const ajaxData = {
+            action: 'templateSearchJson',
+            nonce: palleon.nonce,
+            query: currentKeyword,
+            width: canvasWidth,
+            height: canvasHeight
+        };
+        
+        console.log('📤 Datos de AJAX:', ajaxData);
+        
+        // Realizar petición AJAX
+        $.ajax({
+            url: palleon.ajaxurl,
+            type: 'POST',
+            data: ajaxData,
+            dataType: 'json',
+            timeout: 10000,
+            success: function(response) {
+                console.log('📥 Respuesta del servidor:', response);
+                
+                if (response.success && response.data && response.data.templates) {
+                    console.log('✅ Templates recibidos:', response.data.templates.length);
+                    console.log('🔍 Primer template:', response.data.templates[0]);
+                    
+                    templatesData = response.data.templates;
+                    renderTemplates();
+                    
+                    // Inicializar lazy loading
+                    if ($.fn.lazyload) {
+                        console.log('🖼️ Inicializando lazy loading...');
+                        $('.lazy').lazyload({
+                            threshold: 200,
+                            effect: 'fadeIn'
+                        });
+                    }
+                } else {
+                    console.error('❌ Respuesta inválida:', response);
+                    templatesGrid.html('<div class="palleon-no-templates">No se encontraron templates</div>');
+                }
+                
+                isLoading = false;
+            },
+            error: function(xhr, status, error) {
+                console.error('❌ Error en AJAX:', {
+                    status: status,
+                    error: error,
+                    responseText: xhr.responseText
+                });
+                templatesGrid.html('<div class="palleon-no-templates">Error al cargar templates: ' + error + '</div>');
+                isLoading = false;
+            }
+        });
+    }
+    
+    // Función para renderizar templates
+    function renderTemplates() {
+        console.log('🎨 Iniciando renderizado de templates...');
+        console.log('📊 Templates disponibles:', templatesData.length);
+        console.log('🔍 Filtro actual:', currentFilter);
+        console.log('🔎 Keyword actual:', currentKeyword);
+        
+        const templatesGrid = $('#palleon-templates-grid');
+        let filteredTemplates = templatesData;
+        
+        // Aplicar filtro de categoría
+        if (currentFilter !== 'all') {
+            const beforeFilter = filteredTemplates.length;
+            if (currentFilter === 'favorites') {
+                filteredTemplates = templatesData.filter(template => template.favorited);
+            } else {
+                filteredTemplates = templatesData.filter(template => 
+                    template.tags && template.tags.includes(currentFilter)
+                );
+            }
+            console.log(`🏷️ Filtro de categoría (${currentFilter}): ${beforeFilter} → ${filteredTemplates.length}`);
+        }
+        
+        // Aplicar filtro de búsqueda
+        if (currentKeyword) {
+            const beforeFilter = filteredTemplates.length;
+            filteredTemplates = filteredTemplates.filter(template =>
+                template.title.toLowerCase().includes(currentKeyword.toLowerCase()) ||
+                (template.tags && template.tags.toLowerCase().includes(currentKeyword.toLowerCase()))
+            );
+            console.log(`🔍 Filtro de búsqueda (${currentKeyword}): ${beforeFilter} → ${filteredTemplates.length}`);
+        }
+        
+        // Limitar a 6 resultados
+        const beforeLimit = filteredTemplates.length;
+        filteredTemplates = filteredTemplates.slice(0, 6);
+        console.log(`✂️ Límite de 6: ${beforeLimit} → ${filteredTemplates.length}`);
+        
+        // Construir HTML
+        let templatesHTML = '';
+        filteredTemplates.forEach((template, index) => {
+            console.log(`🔧 Construyendo template ${index + 1}:`, template);
+            const templateHTML = buildTemplateHTML(template);
+            console.log(`📝 HTML generado para template ${index + 1}:`, templateHTML.substring(0, 100) + '...');
+            templatesHTML += templateHTML;
+        });
+        
+        console.log('📄 HTML total length:', templatesHTML.length);
+        
+        // Insertar en el DOM
+        templatesGrid.html(templatesHTML);
+        console.log('✅ HTML insertado en el DOM');
+        
+        // Verificar que se insertó correctamente
+        const insertedItems = templatesGrid.find('.grid-item');
+        console.log(`🔍 Elementos .grid-item encontrados después de insertar: ${insertedItems.length}`);
+        
+        console.log(`🎉 Renderizado completo: ${filteredTemplates.length} templates`);
+    }
+    
+    // Función para construir HTML de un template
+    function buildTemplateHTML(template) {
+        console.log('🏗️ Construyendo HTML para template:', template.title);
+        
+        // Validar datos del template
+        if (!template.id || !template.title || !template.preview || !template.json) {
+            console.error('❌ Template con datos incompletos:', template);
+            return '<div class="grid-item error">Template con datos incompletos</div>';
+        }
+        
+        const favoriteIcon = template.favorited ? 'star' : 'star_border';
+        const tags = template.tags || '';
+        const version = template.version || 'free';
+        
+        console.log('📋 Datos del template:', {
+            id: template.id,
+            title: template.title,
+            preview: template.preview,
+            json: template.json,
+            tags: tags,
+            version: version,
+            favorited: template.favorited
+        });
+        
+        const html = `
+            <div class="grid-item" data-tags="${tags}">
+                <div class="template-favorite">
+                    <button type="button" class="palleon-btn-simple star" data-templateid="${template.id}">
+                        <span class="material-icons">${favoriteIcon}</span>
+                    </button>
+                </div>
+                <div class="palleon-masonry-item-inner palleon-select-template" 
+                     data-json="${template.json}" 
+                     data-version="${version}">
+                    <div class="palleon-img-wrap">
+                        <div class="palleon-img-loader"></div>
+                        <img class="lazy" 
+                             data-src="${template.preview}" 
+                             data-title="${template.title}" 
+                             data-preview="${template.preview}" 
+                             alt="${template.title}" />
+                    </div>
+                    <div class="palleon-masonry-item-desc">
+                        ${template.title}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        console.log('✅ HTML construido para:', template.title);
+        return html;
+    }
+    
+    // Event handlers para filtros
+    $('#palleon-templates-menu ul li').on('click', function(e) {
+        e.preventDefault();
+        
+        const target = $(this).data('target');
+        console.log('🔄 Filtro seleccionado:', target);
+        
+        // Actualizar estado activo
+        $('#palleon-templates-menu ul li').removeClass('active');
+        $(this).addClass('active');
+        
+        // Aplicar filtro
+        currentFilter = target;
+        
+        if (templatesData.length > 0) {
+            renderTemplates();
+        } else {
+            console.log('⚠️ No hay templates cargados, cargando...');
+            loadTemplatesViaAjax();
+        }
+    });
+    
+    // Event handler para búsqueda
+    $('#palleon-template-search').on('click', function() {
+        const keyword = $('#palleon-template-search-keyword').val();
+        console.log('🔍 Búsqueda por botón:', keyword);
+        
+        currentKeyword = keyword;
+        
+        if (templatesData.length > 0) {
+            renderTemplates();
+        } else {
+            loadTemplatesViaAjax();
+        }
+    });
+    
+    // Event handler para búsqueda en tiempo real
+    $('#palleon-template-search-keyword').on('input', function() {
+        const keyword = $(this).val();
+        
+        if (keyword.length === 0 || keyword.length >= 3) {
+            console.log('🔍 Búsqueda en tiempo real:', keyword);
+            currentKeyword = keyword;
+            
+            if (templatesData.length > 0) {
+                renderTemplates();
+            } else {
+                loadTemplatesViaAjax();
+            }
+        }
+    });
+    
+    // Event handler para Enter en búsqueda
+    $('#palleon-template-search-keyword').on('keypress', function(e) {
+        if (e.which === 13) {
+            const keyword = $(this).val();
+            console.log('🔍 Búsqueda con Enter:', keyword);
+            currentKeyword = keyword;
+            
+            if (templatesData.length > 0) {
+                renderTemplates();
+            } else {
+                loadTemplatesViaAjax();
+            }
+        }
+    });
+    
+    // Event handler para favoritos
+    $(document).on('click', '.template-favorite .star', function() {
+        const templateId = $(this).data('templateid');
+        const icon = $(this).find('.material-icons');
+        
+        console.log('⭐ Toggle favorito para:', templateId);
+        
+        // Toggle favorito
+        if (icon.text() === 'star_border') {
+            icon.text('star');
+            // Aquí podrías agregar lógica para guardar en BD
+        } else {
+            icon.text('star_border');
+            // Aquí podrías agregar lógica para remover de BD
+        }
+        
+        // Actualizar datos locales
+        const template = templatesData.find(t => t.id === templateId);
+        if (template) {
+            template.favorited = !template.favorited;
+            console.log('📊 Template actualizado:', template);
+        }
+        
+        // Re-renderizar si estamos en filtro de favoritos
+        if (currentFilter === 'favorites') {
+            renderTemplates();
+        }
+    });
+    
+    // Función para detectar cuando se abre el panel de templates
+    function setupTemplatesPanelDetection() {
+        console.log('🔍 Configurando detección de panel de templates...');
+        
+        const templatesTab = $('[data-target="palleon-panel-templates"]');
+        console.log('🎯 Tab de templates encontrado:', templatesTab.length);
+        
+        if (templatesTab.length) {
+            templatesTab.on('click', function() {
+                console.log('👆 Click en tab de templates');
+                setTimeout(function() {
+                    const gridVisible = $('#palleon-templates-grid').is(':visible');
+                    console.log('👁️ Grid visible:', gridVisible);
+                    console.log('📊 Templates cargados:', templatesData.length);
+                    
+                    if (gridVisible && templatesData.length === 0) {
+                        console.log('🔄 Cargando templates por click en tab...');
+                        loadTemplatesViaAjax();
+                    }
+                }, 100);
+            });
+        }
+        
+        // También cargar si el panel ya está visible
+        const gridVisible = $('#palleon-templates-grid').is(':visible');
+        console.log('👁️ Grid visible al inicio:', gridVisible);
+        
+        if (gridVisible) {
+            console.log('🔄 Cargando templates porque el grid ya está visible...');
+            loadTemplatesViaAjax();
+        }
+    }
+    
+    // Función de inicialización con retry
+    function initializeWithRetry() {
+        console.log('🔄 Intentando inicializar...');
+        
+        if ($('#palleon-templates-grid').length) {
+            console.log('✅ Grid encontrado, inicializando...');
+            setupTemplatesPanelDetection();
+            
+            // Cargar templates inmediatamente si el grid está visible
+            if ($('#palleon-templates-grid').is(':visible')) {
+                console.log('🔄 Grid visible, cargando templates inmediatamente...');
+                loadTemplatesViaAjax();
+            }
+        } else {
+            console.log('⚠️ Grid no encontrado, reintentando en 1 segundo...');
+            setTimeout(initializeWithRetry, 1000);
+        }
+    }
+    
+    // Inicialización
+    initializeWithRetry();
+    
+    // Botón de debug
+    if (console && console.log) {
+        $('body').append('<button id="debug-templates" style="position:fixed;top:10px;left:10px;z-index:9999;background:red;color:white;padding:5px;border:none;border-radius:3px;">Debug Templates</button>');
+        
+        $('#debug-templates').on('click', function() {
+            console.log('🐛 DEBUG INFO:');
+            console.log('Grid existe:', $('#palleon-templates-grid').length);
+            console.log('Grid visible:', $('#palleon-templates-grid').is(':visible'));
+            console.log('Templates cargados:', templatesData.length);
+            console.log('Filtro actual:', currentFilter);
+            console.log('Keyword actual:', currentKeyword);
+            console.log('Está cargando:', isLoading);
+            console.log('Templates data:', templatesData);
+            
+            // Forzar carga
+            if (templatesData.length === 0) {
+                console.log('🔄 Forzando carga de templates...');
+                loadTemplatesViaAjax();
+            }
+        });
+    }
+    
+    console.log('🎉 Sistema de templates AJAX inicializado completamente');
+});
 </script>

@@ -387,25 +387,73 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         });
     }
     function loadAllTemplatesAjax(width, height) {
+        console.log('=== CARGANDO TEMPLATES POR DIMENSIONES ===');
+        console.log('Dimensiones:', width + 'x' + height);
+        
         const formData = new FormData();
-        formData.append('action', 'loadAllTemplates');
+        formData.append('action', 'templateSearchJson');
         formData.append('nonce', '<?php echo wp_create_nonce('palleon-nonce'); ?>');
         formData.append('dimensions', width + 'x' + height);
+        formData.append('keyword', '');
+        formData.append('category', 'all');
         
         fetch('/wp-admin/admin-ajax.php', {
             method: 'POST',
             body: formData
         })
-        .then(response => response.text())
-        .then(html => {
+        .then(response => response.json())
+        .then(data => {
+            console.log('Respuesta JSON:', data);
+            
             const templatesGrid = document.getElementById('palleon-templates-grid');
-            if (templatesGrid) {
-                templatesGrid.innerHTML = html;
+            if (templatesGrid && data.success) {
+                templatesGrid.innerHTML = '';
+                
+                if (data.data && data.data.templates && data.data.templates.length > 0) {
+                    data.data.templates.forEach(template => {
+                        const templateHtml = buildTemplateHTML(template);
+                        templatesGrid.insertAdjacentHTML('beforeend', templateHtml);
+                    });
+                    
+                    console.log('Templates cargados:', data.data.limited + ' de ' + data.data.total);
+                } else {
+                    templatesGrid.innerHTML = '<div class="notice notice-warning"><h6>No se encontraron templates para estas dimensiones</h6></div>';
+                }
+            } else {
+                console.error('Error en la respuesta:', data.message);
+                if (templatesGrid) {
+                    templatesGrid.innerHTML = '<div class="notice notice-error"><h6>Error: ' + (data.message || 'No se pudieron cargar los templates') + '</h6></div>';
+                }
             }
         })
         .catch(error => {
-            console.error('Error cargando templates:', error);
+            console.error('Error en la petición:', error);
+            const templatesGrid = document.getElementById('palleon-templates-grid');
+            if (templatesGrid) {
+                templatesGrid.innerHTML = '<div class="notice notice-error"><h6>Error cargando templates</h6></div>';
+            }
         });
+    }
+
+    function buildTemplateHTML(template) {
+        return `
+            <div class="grid-item" data-tags="${template.tags}">
+                <div class="template-favorite">
+                    <button type="button" class="palleon-btn-simple star" data-templateid="${template.id}">
+                        <span class="material-icons">star_border</span>
+                    </button>
+                </div>
+                <div class="palleon-masonry-item-inner palleon-select-template" data-json="${template.json}" data-version="${template.version}">
+                    <div class="palleon-img-wrap">
+                        <div class="palleon-img-loader"></div>
+                        <img class="lazy" data-src="${template.preview}" data-title="${template.title}" data-preview="${template.preview}" />
+                    </div>
+                    <div class="palleon-masonry-item-desc">
+                        ${template.title}
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     if (document.readyState === 'loading') {

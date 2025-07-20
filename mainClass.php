@@ -52,6 +52,8 @@ class Palleon {
         add_filter('plugin_row_meta', array($this, 'plugin_links'), 10, 4 );
         add_action('wp_ajax_templateSearch', array($this, 'template_search'));
         add_action('wp_ajax_nopriv_templateSearch', array($this, 'template_search'));
+        add_action('wp_ajax_templateSearchJson', array($this, 'template_search_json'));
+        add_action('wp_ajax_nopriv_templateSearchJson', array($this, 'template_search_json'));
         add_action('wp_ajax_loadAllTemplates', array($this, 'load_all_templates'));
         add_action('wp_ajax_nopriv_loadAllTemplates', array($this, 'load_all_templates'));
         add_action('palleon_backend', array($this, 'user_roles'));
@@ -1346,7 +1348,7 @@ class Palleon {
         wp_die();
     }
 
-    /**
+   /**
 	 * Favorite Template
 	 */
     public function favorite_template(){
@@ -1489,8 +1491,114 @@ class Palleon {
     }
 
     /**
-	 * Save Preferences
-	 */
+     * Template Search JSON - Endpoint para devolver templates en formato JSON
+     */
+    public function template_search_json(){
+        if ( ! wp_verify_nonce( $_POST['nonce'], 'palleon-nonce' ) ) {
+            wp_die(json_encode(array('error' => esc_html__('Security Error!', 'palleon'))));
+        }
+        
+        $user_fav = get_user_meta(get_current_user_id(), 'palleon_template_fav',true);
+        if (empty($user_fav)) {
+            $user_fav = array();
+        }
+        
+        // Obtener parámetros de la petición
+        $query = isset($_POST['query']) ? sanitize_text_field($_POST['query']) : '';
+        $width = isset($_POST['width']) ? intval($_POST['width']) : 0;
+        $height = isset($_POST['height']) ? intval($_POST['height']) : 0;
+        
+        // Obtener templates usando el método apropiado
+        if ($width > 0 && $height > 0) {
+            $dimensions = $width . 'x' . $height;
+            $templates = $this->get_templates_by_dimensions($dimensions);
+            
+            // Si no hay templates personalizados para estas dimensiones, usar templates generales
+            if (empty($templates)) {
+                error_log("Palleon: No custom templates found for dimensions {$dimensions}, using general templates");
+                $random = PalleonSettings::get_option('template_order', 'random');
+                $templates = palleon_templates();
+                if ($random == 'random') {
+                    shuffle($templates);
+                } else if ($random == 'new') {
+                    $templates = array_reverse($templates);
+                }
+            } else {
+                error_log("Palleon: Found " . count($templates) . " custom templates for dimensions {$dimensions}");
+            }
+        } else {
+            // Método tradicional usando library.php
+            error_log("Palleon: No dimensions specified, using general templates");
+            $random = PalleonSettings::get_option('template_order', 'random');
+            $templates = palleon_templates();
+            if ($random == 'random') {
+                shuffle($templates);
+            } else if ($random == 'new') {
+                $templates = array_reverse($templates);
+            }
+        }
+        
+        // Aplicar filtro por query si se especificó
+        if (!empty($query)) {
+            $filteredArray = array();
+            foreach($templates as $template) {
+                // Buscar en título y tags
+                if (stripos($template[1], $query) !== false || 
+                    (is_array($template[4]) && implode(' ', $template[4]) && stripos(implode(' ', $template[4]), $query) !== false)) {
+                    $filteredArray[] = $template;
+                }
+            }
+            $templates = $filteredArray;
+        }
+        
+        // Contar total antes de limitar
+        $total = count($templates);
+        
+        // LIMITAR A 6 RESULTADOS
+        $templates = array_slice($templates, 0, 6);
+        
+        error_log("Palleon: Total templates before limit: {$total}, after limit: " . count($templates));
+        
+        // Preparar respuesta JSON con estructura compatible
+        $response = array(
+            'success' => true,
+            'data' => array(
+                'total' => $total,
+                'limited' => count($templates),
+                'templates' => array()
+            )
+        );
+        
+        if (empty($templates)) {
+            error_log("Palleon: No templates to return, sending error response");
+            $response['success'] = false;
+            $response['message'] = esc_html__('No results found.', 'palleon');
+        } else {
+            foreach($templates as $template) {
+                $is_favorited = in_array($template[0], $user_fav);
+                $template_version = isset($template[5]) ? $template[5] : 'free';
+                $tags_string = is_array($template[4]) ? implode(',', $template[4]) : $template[4];
+                
+                $response['data']['templates'][] = array(
+                    'id' => $template[0],
+                    'title' => $template[1],
+                    'preview' => $template[2],
+                    'json' => $template[3],
+                    'tags' => $tags_string,
+                    'version' => $template_version,
+                    'favorited' => $is_favorited
+                );
+            }
+        }
+        
+        header('Content-Type: application/json');
+        echo json_encode($response);
+        wp_die();
+    }
+
+    /**
+     * Save Preferences
+     */
     public function save_preferences(){
         if ( ! wp_verify_nonce( $_POST['nonce'], 'palleon-nonce' ) ) {
             wp_die(esc_html__('Security Error!', 'palleon'));
@@ -1718,7 +1826,7 @@ class Palleon {
                 $pro = true;
             }
         }
-
+    
         if (class_exists('SwpmMemberUtils') && is_user_logged_in()) {
             $member_level = SwpmMemberUtils::get_logged_in_members_level();
             $levels = PalleonSettings::get_option('swpm_template_levels','');
