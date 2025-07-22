@@ -44,6 +44,10 @@ if (PalleonSettings::get_option('module_templates', 'enable') === 'enable'):
                                             <!-- Los templates se cargarán dinámicamente vía AJAX -->
                                         </div>
                                     </div>
+                                    <!-- Contenedor de paginación dinámico (inicialmente oculto) -->
+                                    <div id="templates-pagination" class="palleon-pagination-wrap" style="display: none;">
+                                        <!-- La paginación se generará dinámicamente aquí -->
+                                    </div>
                                 </div>
                             </div>
                             <?php if (is_user_logged_in()) { ?>
@@ -73,10 +77,11 @@ if (PalleonSettings::get_option('module_templates', 'enable') === 'enable'):
 /* Estilos para la paginación */
 .palleon-pagination {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     margin: 20px 0;
-    gap: 5px;
+    gap: 8px;
 }
 
 .palleon-pagination a {
@@ -113,6 +118,53 @@ if (PalleonSettings::get_option('module_templates', 'enable') === 'enable'):
 
 .palleon-pagination .material-icons {
     font-size: 18px;
+}
+
+/* Alineación horizontal para elementos de paginación dinámica */
+.palleon-pagination-numbers {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.palleon-pagination-navigation {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+
+
+.palleon-pagination-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    min-width: 35px;
+    height: 35px;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+
+.palleon-pagination-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+}
+
+.palleon-pagination-dots {
+    display: inline-flex;
+    align-items: center;
+    font-size: 13px;
+    padding: 0 2px;
 }
 </style>
 

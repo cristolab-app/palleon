@@ -132,7 +132,7 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                                 </div>
                                 <div class="grid-item" data-width="1920" data-height="1080">
                                     <div class="canvas-card">
-                                        <span class="canvas-title"><?php echo esc_html__('Wallpaper', 'palleon'); ?></opti</span>
+                                        <span class="canvas-title"><?php echo esc_html__('Wallpaper', 'palleon'); ?></span>
                                         <span class="canvas-size">1920x1080px</span>
                                     </div>
                                 </div>
@@ -157,7 +157,7 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                     <?php Palleon::ad_manager('blank-canvas'); ?>
                 </div>
                 <?php if ($templates == 'enable') { ?>
-                <div id="modal-template-library" class="palleon-tab" sytle="display:none;">
+                <div id="modal-template-library" class="palleon-tab" style="display:none;">
                     <div class="palleon-templates-wrap">
                         <div class="palleon-tabs">
                             <ul class="palleon-tabs-menu">
@@ -220,6 +220,16 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                                                 </div>
                                             </div>
                                             <?php } ?>
+                                        </div>
+                                        
+                                        <!-- Contenedor de paginación -->
+                                        <div id="palleon-pagination-container" class="palleon-pagination-wrap" style="display: none;">
+                                            <div class="palleon-pagination">
+                                                <!-- La paginación se generará dinámicamente aquí -->
+                                            </div>
+                                            <div class="palleon-pagination-info">
+                                                <!-- La información de paginación se mostrará aquí -->
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -343,7 +353,6 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         const w = parseInt(cardElement.dataset.width, 10);
         const h = parseInt(cardElement.dataset.height, 10);
         if (isNaN(w) || isNaN(h) || w <= 0 || h <= 0) {
-            console.error('Dimensiones inválidas en grid-item:', cardElement);
             return;
         }
         cardElement.dataset.aspectRatio = w / h;
@@ -375,9 +384,7 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
 
                 loadAllTemplatesAjax(width, height);
                 document.getElementById('palleon-canvas-selected').value = width + 'x' + height;
-                console.log(
-                    document.getElementById('palleon-canvas-create').click()
-                )
+                document.getElementById('palleon-canvas-create').click()
             });
         });
 
@@ -386,48 +393,37 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
                 .forEach(item => requestAnimationFrame(() => adjustCardHeight(item)));
         });
     }
-    function loadAllTemplatesAjax(width, height) {
-        console.log('=== CARGANDO TEMPLATES POR DIMENSIONES ===');
-        console.log('Dimensiones:', width + 'x' + height);
-        
+
+    function loadAllTemplatesAjax(width, height, page = 1) {
         const formData = new FormData();
-        formData.append('action', 'templateSearchJson');
+        formData.append('action', 'templateSearch');
         formData.append('nonce', '<?php echo wp_create_nonce('palleon-nonce'); ?>');
         formData.append('dimensions', width + 'x' + height);
         formData.append('keyword', '');
         formData.append('category', 'all');
-        
+        formData.append('page', page);
+
         fetch('/wp-admin/admin-ajax.php', {
             method: 'POST',
             body: formData
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Respuesta JSON:', data);
-            
             const templatesGrid = document.getElementById('palleon-templates-grid');
             if (templatesGrid && data.success) {
-                templatesGrid.innerHTML = '';
+                templatesGrid.innerHTML = data.html;
                 
-                if (data.data && data.data.templates && data.data.templates.length > 0) {
-                    data.data.templates.forEach(template => {
-                        const templateHtml = buildTemplateHTML(template);
-                        templatesGrid.insertAdjacentHTML('beforeend', templateHtml);
-                    });
-                    
-                    console.log('Templates cargados:', data.data.limited + ' de ' + data.data.total);
-                } else {
-                    templatesGrid.innerHTML = '<div class="notice notice-warning"><h6>No se encontraron templates para estas dimensiones</h6></div>';
-                }
-            } else {
-                console.error('Error en la respuesta:', data.message);
-                if (templatesGrid) {
-                    templatesGrid.innerHTML = '<div class="notice notice-error"><h6>Error: ' + (data.message || 'No se pudieron cargar los templates') + '</h6></div>';
+                updatePaginationControls(data.pagination, width, height);
+            } 
+            else {
+                templatesGrid.innerHTML = '<div class="notice notice-warning"><h6>No se encontraron templates</h6></div>';
+                const paginationContainer = document.getElementById('templates-pagination');
+                if (paginationContainer) {
+                    paginationContainer.style.display = 'none';
                 }
             }
         })
         .catch(error => {
-            console.error('Error en la petición:', error);
             const templatesGrid = document.getElementById('palleon-templates-grid');
             if (templatesGrid) {
                 templatesGrid.innerHTML = '<div class="notice notice-error"><h6>Error cargando templates</h6></div>';
@@ -435,26 +431,95 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         });
     }
 
-    function buildTemplateHTML(template) {
-        return `
-            <div class="grid-item" data-tags="${template.tags}">
-                <div class="template-favorite">
-                    <button type="button" class="palleon-btn-simple star" data-templateid="${template.id}">
-                        <span class="material-icons">star_border</span>
-                    </button>
-                </div>
-                <div class="palleon-masonry-item-inner palleon-select-template" data-json="${template.json}" data-version="${template.version}">
-                    <div class="palleon-img-wrap">
-                        <div class="palleon-img-loader"></div>
-                        <img class="lazy" data-src="${template.preview}" data-title="${template.title}" data-preview="${template.preview}" />
-                    </div>
-                    <div class="palleon-masonry-item-desc">
-                        ${template.title}
-                    </div>
-                </div>
-            </div>
-        `;
+    function updatePaginationControls(pagination, width, height) {
+        let paginationContainer = document.getElementById('templates-pagination');
+        if (!paginationContainer) {
+            paginationContainer = document.createElement('div');
+            paginationContainer.id = 'templates-pagination';
+            paginationContainer.className = 'palleon-pagination-wrap';
+            paginationContainer.style.display = 'none';
+            
+            const templatesGrid = document.getElementById('palleon-templates-grid');
+            if (templatesGrid && templatesGrid.parentNode) {
+                templatesGrid.parentNode.insertBefore(paginationContainer, templatesGrid.nextSibling);
+            }
+        }
+
+        if (pagination.total_pages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        let paginationHTML = '<div class="palleon-pagination">';
+        
+        paginationHTML += '<div class="palleon-pagination-numbers">';
+        
+        if (pagination.total_pages <= 8) {
+            for (let i = 1; i <= pagination.total_pages; i++) {
+                const activeClass = i === pagination.current_page ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass + '" data-page="' + i + '" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + i + ')">' + i + '</button>';
+            }
+        } else {
+            const current = pagination.current_page;
+            const total = pagination.total_pages;
+            
+            const activeClass1 = current === 1 ? ' active' : '';
+            paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass1 + '" data-page="1" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 1)">1</button>';
+            
+            if (total > 2) {
+                const activeClass2 = current === 2 ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass2 + '" data-page="2" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 2)">2</button>';
+            }
+            
+            if (total > 3) {
+                const activeClass3 = current === 3 ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass3 + '" data-page="3" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 3)">3</button>';
+            }
+            
+            if (total > 4) {
+                const activeClass4 = current === 4 ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass4 + '" data-page="4" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 4)">4</button>';
+            }
+            
+            if (total > 5) {
+                const activeClass5 = current === 5 ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass5 + '" data-page="5" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 5)">5</button>';
+            }
+            
+            if (total > 6) {
+                paginationHTML += '<span class="palleon-pagination-dots">...</span>';
+            }
+            
+            if (total > 5) {
+                const activeClassLast = current === total ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClassLast + '" data-page="' + total + '" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + total + ')">' + total + '</button>';
+            }
+        }
+        
+        paginationHTML += '</div>';
+        
+        paginationHTML += '<div class="palleon-pagination-navigation">';
+        
+        const prevDisabled = !pagination.has_prev ? ' disabled' : '';
+        paginationHTML += '<button class="palleon-btn palleon-pagination-btn" data-page="prev"' + prevDisabled + ' onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + (pagination.current_page - 1) + ')">';
+        paginationHTML += '<span class="material-icons">chevron_left</span>Anterior</button>';
+        
+        const nextDisabled = !pagination.has_next ? ' disabled' : '';
+        paginationHTML += '<button class="palleon-btn palleon-pagination-btn" data-page="next"' + nextDisabled + ' onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + (pagination.current_page + 1) + ')">';
+        paginationHTML += 'Siguiente<span class="material-icons">chevron_right</span></button>';
+        
+        paginationHTML += '</div>';
+        
+        paginationHTML += '</div>';
+        
+        const startItem = ((pagination.current_page - 1) * pagination.per_page) + 1;
+        const endItem = Math.min(pagination.current_page * pagination.per_page, pagination.total_items);
+        paginationHTML += '<div class="palleon-pagination-info">Mostrando ' + startItem + '-' + endItem + ' de ' + pagination.total_items + ' templates</div>';
+        
+        paginationContainer.innerHTML = paginationHTML;
+        paginationContainer.style.display = 'block';
     }
+
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initOnReady);

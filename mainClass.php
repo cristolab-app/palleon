@@ -1407,7 +1407,7 @@ class Palleon {
 	 */
     public function template_search(){
         if ( ! wp_verify_nonce( $_POST['nonce'], 'palleon-nonce' ) ) {
-            wp_die(esc_html__('Security Error!', 'palleon'));
+            wp_die(json_encode(array('success' => false, 'error' => esc_html__('Security Error!', 'palleon'))));
         }
         
         $user_fav = get_user_meta(get_current_user_id(), 'palleon_template_fav',true);
@@ -1417,76 +1417,143 @@ class Palleon {
         
         $keyword = $_POST['keyword'];
         $category = $_POST['category'];
+        $page = isset($_POST['page']) ? intval($_POST['page']) : 1;
+        $per_page = 10; // Templates por página
         
         // Obtener dimensiones si se proporcionan
         $dimensions = isset($_POST['dimensions']) ? sanitize_text_field($_POST['dimensions']) : '';
         
         // Si hay dimensiones, usar filtrado por dimensiones, sino usar el método tradicional
         if (!empty($dimensions)) {
-            $templates = $this->get_templates_by_dimensions($dimensions);
+            $result = $this->get_templates_by_dimensions($dimensions, $page, $per_page);
+            $templates = $result['templates'];
+            $total_items = $result['total'];
         } else {
-            // Método tradicional
+            // Método tradicional con paginación manual
             $random = PalleonSettings::get_option('template_order', 'random');
-            $templates = palleon_templates();
+            $all_templates = palleon_templates();
             if ($random == 'random') {
-                shuffle($templates);
+                shuffle($all_templates);
             } else if ($random == 'new') {
-                $templates = array_reverse($templates);
+                $all_templates = array_reverse($all_templates);
+            }
+            
+            // Aplicar filtros antes de paginar
+            $filtered_templates = $all_templates;
+            
+            // Aplicar filtro por categoría
+            if (!empty($category) && $category != 'all') {
+                $filteredArray = array();
+                foreach($filtered_templates as $template) {
+                    if (in_array($category, $template[4])) {
+                        $filteredArray[] = $template;
+                    }
+                }
+                $filtered_templates = $filteredArray;
+            }
+            
+            // Aplicar filtro por keyword
+            if (!empty($keyword)) {
+                $filteredArray = array();
+                foreach($filtered_templates as $template) {
+                    if (stripos($template[1], $keyword) !== false) {
+                        $filteredArray[] = $template;
+                    }
+                }
+                $filtered_templates = $filteredArray;
+            }
+            
+            $total_items = count($filtered_templates);
+            $offset = ($page - 1) * $per_page;
+            $templates = array_slice($filtered_templates, $offset, $per_page);
+        }
+        
+        // Aplicar filtros adicionales si no usamos dimensiones
+        if (!empty($dimensions)) {
+            // Aplicar filtro por categoría
+            if (!empty($category) && $category != 'all') {
+                $filteredArray = array();
+                foreach($templates as $template) {
+                    if (in_array($category, $template[4])) {
+                        $filteredArray[] = $template;
+                    }
+                }
+                $templates = $filteredArray;
+                $total_items = count($templates); // Recalcular total después del filtro
+            }
+            
+            // Aplicar filtro por keyword
+            if (!empty($keyword)) {
+                $filteredArray = array();
+                foreach($templates as $template) {
+                    if (stripos($template[1], $keyword) !== false) {
+                        $filteredArray[] = $template;
+                    }
+                }
+                $templates = $filteredArray;
+                $total_items = count($templates); // Recalcular total después del filtro
             }
         }
         
-        // Aplicar filtro por categoría
-        if (!empty($category) && $category != 'all') {
-            $filteredArray = array();
-            foreach($templates as $template) {
-                if (in_array($category, $template[4])) {
-                    $filteredArray[] = $template;
-                }
-            }
-            $templates = $filteredArray;
-        }
+        // Capturar HTML en buffer
+        ob_start();
         
-        // Aplicar filtro por keyword
-        if (!empty($keyword)) {
-            $filteredArray = array();
-            foreach($templates as $template) {
-                if (stripos($template[1], $keyword) !== false) {
-                    $filteredArray[] = $template;
-                }
-            }
-            $templates = $filteredArray;
-        }
-        if ($templates == array()) {
+        if (empty($templates)) {
             echo '<div class="notice notice-warning">' . esc_html__( 'No results found.', 'palleon' ) . '</div>';
         } else {
-        foreach($templates as $template) { 
-            $btn_class = '';
-            $icon = 'star_border';
-            if (in_array($template[0], $user_fav)) {
-                $btn_class = 'favorited';
-                $icon = 'star';
-            }
-            $template_version = 'free';
-            if (isset($template[5])) {
-                $template_version = $template[5]; 
-            }
-            ?>
-            <div class="grid-item">
-                <?php if ($template_version == 'pro') { ?>
-                <div class="template-pro"><span class="material-icons">workspace_premium</span></div>
-                <?php } ?>
-                <div class="template-favorite"><button type="button" class="palleon-btn-simple star <?php echo esc_attr($btn_class); ?>" data-templateid="<?php echo esc_attr($template[0]); ?>"><span class="material-icons"><?php echo esc_html($icon); ?></span></button></div>
-                <div class="palleon-masonry-item-inner palleon-select-template" data-json="<?php echo esc_url($template[3]); ?>" data-version="<?php echo esc_attr($template_version); ?>">
-                    <div class="palleon-img-wrap">
-                        <div class="palleon-img-loader"></div>
-                        <img class="lazy" data-src="<?php echo esc_url($template[2]); ?>" data-title="<?php echo esc_attr($template[1]); ?>" data-preview="<?php echo esc_url($template[6]); ?>" />
-                    </div>
-                    <div class="palleon-masonry-item-desc">
-                    <?php echo esc_html($template[1]); ?>
+            foreach($templates as $template) { 
+                $btn_class = '';
+                $icon = 'star_border';
+                if (in_array($template[0], $user_fav)) {
+                    $btn_class = 'favorited';
+                    $icon = 'star';
+                }
+                $template_version = 'free';
+                if (isset($template[5])) {
+                    $template_version = $template[5]; 
+                }
+                ?>
+                <div class="grid-item">
+                    <?php if ($template_version == 'pro') { ?>
+                    <div class="template-pro"><span class="material-icons">workspace_premium</span></div>
+                    <?php } ?>
+                    <div class="template-favorite"><button type="button" class="palleon-btn-simple star <?php echo esc_attr($btn_class); ?>" data-templateid="<?php echo esc_attr($template[0]); ?>"><span class="material-icons"><?php echo esc_html($icon); ?></span></button></div>
+                    <div class="palleon-masonry-item-inner palleon-select-template" data-json="<?php echo esc_url($template[3]); ?>" data-version="<?php echo esc_attr($template_version); ?>">
+                        <div class="palleon-img-wrap">
+                            <div class="palleon-img-loader"></div>
+                            <img class="lazy" data-src="<?php echo esc_url($template[2]); ?>" data-title="<?php echo esc_attr($template[1]); ?>" data-preview="<?php echo esc_url($template[6]); ?>" />
+                        </div>
+                        <div class="palleon-masonry-item-desc">
+                        <?php echo esc_html($template[1]); ?>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <?php }}
+                <?php 
+            }
+        }
+        
+        $html_content = ob_get_clean();
+        
+        // Calcular datos de paginación
+        $total_pages = ceil($total_items / $per_page);
+        
+        // Preparar respuesta JSON
+        $response = array(
+            'success' => true,
+            'html' => $html_content,
+            'pagination' => array(
+                'current_page' => $page,
+                'total_pages' => $total_pages,
+                'per_page' => $per_page,
+                'total_items' => $total_items,
+                'has_prev' => $page > 1,
+                'has_next' => $page < $total_pages
+            )
+        );
+        
+        // Enviar respuesta JSON
+        header('Content-Type: application/json');
+        echo json_encode($response);
         wp_die();
     }
 
@@ -1511,7 +1578,8 @@ class Palleon {
         // Obtener templates usando el método apropiado
         if ($width > 0 && $height > 0) {
             $dimensions = $width . 'x' . $height;
-            $templates = $this->get_templates_by_dimensions($dimensions);
+            $result = $this->get_templates_by_dimensions($dimensions);
+            $templates = $result['templates'];
             
             // Si no hay templates personalizados para estas dimensiones, usar templates generales
             if (empty($templates)) {
@@ -1626,7 +1694,8 @@ class Palleon {
         $dimensions = isset($_POST['dimensions']) ? sanitize_text_field($_POST['dimensions']) : '';
       
         // Obtener templates filtrados por dimensiones
-        $templates = $this->get_templates_by_dimensions($dimensions);
+        $result = $this->get_templates_by_dimensions($dimensions);
+        $templates = $result['templates'];
         
         if (empty($templates)) {
             echo '<div class="notice notice-warning"><h6>' . esc_html__( 'No templates found', 'palleon' ) . '</h6></div>';
@@ -2085,20 +2154,21 @@ class Palleon {
     /**
      * Get Templates Filtered by Dimensions
      */
-    private function get_templates_by_dimensions($dimensions) {
+    private function get_templates_by_dimensions($dimensions, $page = 1, $per_page = 6) {
         
         // Si no se especificaron dimensiones, devolver array vacío para debugging
         if (empty($dimensions)) {
-            return array();
+            return array('templates' => array(), 'total' => 0);
         }
         
-        // Obtener templates personalizados que coincidan con las dimensiones
-        $custom_templates = array();
+        // Calcular offset para paginación
+        $offset = ($page - 1) * $per_page;
         
         // Query para obtener posts de palleontemplates con la taxonomía category_palleon
         $args = array(
             'post_type' => 'palleontemplates',
-            'posts_per_page' => -1,
+            'posts_per_page' => $per_page,
+            'offset' => $offset,
             'tax_query' => array(
                 array(
                     'taxonomy' => 'category_palleon',
@@ -2109,6 +2179,7 @@ class Palleon {
         );
         
         $query = new WP_Query($args);
+        $custom_templates = array();
         
         if ($query->have_posts()) {
             while ($query->have_posts()) {
@@ -2141,10 +2212,11 @@ class Palleon {
             wp_reset_postdata();
         }
         
-        
-        // Solo devolver los templates personalizados filtrados
-        // Si no hay ninguno, devolver array vacío
-        return $custom_templates;
+        // Devolver templates y total para paginación
+        return array(
+            'templates' => $custom_templates,
+            'total' => $query->found_posts
+        );
     }
 }
 
