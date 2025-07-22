@@ -395,6 +395,11 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
     }
 
     function loadAllTemplatesAjax(width, height, page = 1) {
+        const templatesGrid = document.getElementById('palleon-templates-grid');
+        if (!templatesGrid) return;
+        
+        templatesGrid.innerHTML = '<div class="palleon-templates-loader"><div class="palleon-loader"></div><p>Cargando templates...</p></div>';
+        
         const formData = new FormData();
         formData.append('action', 'templateSearch');
         formData.append('nonce', '<?php echo wp_create_nonce('palleon-nonce'); ?>');
@@ -409,7 +414,6 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         })
         .then(response => response.json())
         .then(data => {
-            const templatesGrid = document.getElementById('palleon-templates-grid');
             if (templatesGrid && data.success) {
                 templatesGrid.innerHTML = data.html;
                 
@@ -424,11 +428,49 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
             }
         })
         .catch(error => {
-            const templatesGrid = document.getElementById('palleon-templates-grid');
+            console.error('Error cargando templates:', error);
             if (templatesGrid) {
                 templatesGrid.innerHTML = '<div class="notice notice-error"><h6>Error cargando templates</h6></div>';
             }
         });
+    }
+
+    function generatePaginationRange(current, total, delta = 2) {
+        const range = [];
+        
+        if (total <= 7) {
+            for (let i = 1; i <= total; i++) {
+                range.push(i);
+            }
+            return range;
+        }
+        
+        let start = Math.max(1, current - delta);
+        let end = Math.min(total, current + delta);
+        
+        if (end - start < 4) {
+            if (start === 1) {
+                end = Math.min(total, start + 4);
+            } else if (end === total) {
+                start = Math.max(1, end - 4);
+            }
+        }
+        
+        if (start > 2) {
+            range.push(1);
+            if (start > 3) range.push('...');
+        }
+        
+        for (let i = start; i <= end; i++) {
+            range.push(i);
+        }
+        
+        if (end < total - 1) {
+            if (end < total - 2) range.push('...');
+            range.push(total);
+        }
+        
+        return range;
     }
 
     function updatePaginationControls(pagination, width, height) {
@@ -454,58 +496,27 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         
         paginationHTML += '<div class="palleon-pagination-numbers">';
         
-        if (pagination.total_pages <= 8) {
-            for (let i = 1; i <= pagination.total_pages; i++) {
-                const activeClass = i === pagination.current_page ? ' active' : '';
-                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass + '" data-page="' + i + '" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + i + ')">' + i + '</button>';
-            }
-        } else {
-            const current = pagination.current_page;
-            const total = pagination.total_pages;
-            
-            const activeClass1 = current === 1 ? ' active' : '';
-            paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass1 + '" data-page="1" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 1)">1</button>';
-            
-            if (total > 2) {
-                const activeClass2 = current === 2 ? ' active' : '';
-                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass2 + '" data-page="2" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 2)">2</button>';
-            }
-            
-            if (total > 3) {
-                const activeClass3 = current === 3 ? ' active' : '';
-                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass3 + '" data-page="3" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 3)">3</button>';
-            }
-            
-            if (total > 4) {
-                const activeClass4 = current === 4 ? ' active' : '';
-                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass4 + '" data-page="4" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 4)">4</button>';
-            }
-            
-            if (total > 5) {
-                const activeClass5 = current === 5 ? ' active' : '';
-                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass5 + '" data-page="5" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', 5)">5</button>';
-            }
-            
-            if (total > 6) {
+        const pageRange = generatePaginationRange(pagination.current_page, pagination.total_pages);
+        
+        pageRange.forEach(item => {
+            if (item === '...') {
                 paginationHTML += '<span class="palleon-pagination-dots">...</span>';
+            } else {
+                const activeClass = item === pagination.current_page ? ' active' : '';
+                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClass + '" data-page="' + item + '">' + item + '</button>';
             }
-            
-            if (total > 5) {
-                const activeClassLast = current === total ? ' active' : '';
-                paginationHTML += '<button class="palleon-btn palleon-pagination-number' + activeClassLast + '" data-page="' + total + '" onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + total + ')">' + total + '</button>';
-            }
-        }
+        });
         
         paginationHTML += '</div>';
         
         paginationHTML += '<div class="palleon-pagination-navigation">';
         
         const prevDisabled = !pagination.has_prev ? ' disabled' : '';
-        paginationHTML += '<button class="palleon-btn palleon-pagination-btn" data-page="prev"' + prevDisabled + ' onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + (pagination.current_page - 1) + ')">';
+        paginationHTML += '<button class="palleon-btn palleon-pagination-btn" data-page="prev" data-target-page="' + (pagination.current_page - 1) + '"' + prevDisabled + '>';
         paginationHTML += '<span class="material-icons">chevron_left</span>Anterior</button>';
         
         const nextDisabled = !pagination.has_next ? ' disabled' : '';
-        paginationHTML += '<button class="palleon-btn palleon-pagination-btn" data-page="next"' + nextDisabled + ' onclick="loadAllTemplatesAjax(' + width + ', ' + height + ', ' + (pagination.current_page + 1) + ')">';
+        paginationHTML += '<button class="palleon-btn palleon-pagination-btn" data-page="next" data-target-page="' + (pagination.current_page + 1) + '"' + nextDisabled + '>';
         paginationHTML += 'Siguiente<span class="material-icons">chevron_right</span></button>';
         
         paginationHTML += '</div>';
@@ -518,7 +529,41 @@ $ml_button =  PalleonSettings::get_option('hide_ml_btns', 'show');
         
         paginationContainer.innerHTML = paginationHTML;
         paginationContainer.style.display = 'block';
+        
+        paginationContainer.dataset.currentWidth = width;
+        paginationContainer.dataset.currentHeight = height;
     }
+
+    window.loadAllTemplatesAjax = loadAllTemplatesAjax;
+
+    document.addEventListener('click', function(e) {
+        if (e.target.matches('.palleon-pagination-number, .palleon-pagination-btn')) {
+            e.preventDefault();
+            
+            if (e.target.classList.contains('disabled')) {
+                return;
+            }
+            
+            const paginationContainer = document.getElementById('templates-pagination');
+            if (!paginationContainer) return;
+            
+            const width = paginationContainer.dataset.currentWidth;
+            const height = paginationContainer.dataset.currentHeight;
+            
+            if (!width || !height) return;
+            
+            let targetPage;
+            if (e.target.dataset.page === 'prev' || e.target.dataset.page === 'next') {
+                targetPage = e.target.dataset.targetPage;
+            } else {
+                targetPage = e.target.dataset.page;
+            }
+            
+            if (targetPage) {
+                loadAllTemplatesAjax(parseInt(width), parseInt(height), parseInt(targetPage));
+            }
+        }
+    });
 
 
     if (document.readyState === 'loading') {
